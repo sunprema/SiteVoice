@@ -85,7 +85,7 @@ Update this table as slices are completed:
 
 | Slice | Name           | Status         |
 | ----- | -------------- | -------------- |
-| 00    | Foundation     | ⬜ Not started |
+| 00    | Foundation     | ✅ Complete    |
 | 01    | Auth           | ⬜ Not started |
 | 02    | Projects       | ⬜ Not started |
 | 03    | Recording      | ⬜ Not started |

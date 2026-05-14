@@ -3,6 +3,7 @@ defmodule Sitevoice.Accounts do
     otp_app: :sitevoice
 
   resources do
+    resource Sitevoice.Accounts.Organization
     resource Sitevoice.Accounts.Token
     resource Sitevoice.Accounts.User
     resource Sitevoice.Accounts.ApiKey

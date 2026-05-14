@@ -26,7 +26,14 @@ config :ash_oban, pro?: false
 config :sitevoice, Oban,
   engine: Oban.Engines.Basic,
   notifier: Oban.Notifiers.Postgres,
-  queues: [default: 10],
+  queues: [
+    default: 10,
+    audio: 5,
+    ai: 5,
+    pdf: 5,
+    integrations: 10,
+    notifications: 10
+  ],
   repo: Sitevoice.Repo,
   plugins: [{Oban.Plugins.Cron, []}]
 
@@ -149,6 +156,9 @@ config :phoenix, :json_library, Jason
 
 # ExAws compile-time defaults — overridden at runtime from AWS_ENDPOINT_URL_S3
 # env var injected by `fly storage create` (see config/runtime.exs).
+config :ex_aws,
+  http_client: ExAws.Request.Req
+
 config :ex_aws, :s3,
   scheme: "https://",
   host: "fly.storage.tigris.dev",

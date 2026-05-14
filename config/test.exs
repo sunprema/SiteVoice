@@ -1,5 +1,11 @@
 import Config
 config :sitevoice, Oban, testing: :manual
+
+config :ex_aws, :http_client, Sitevoice.Test.ExAwsMock
+
+config :ex_aws,
+  access_key_id: "test_key",
+  secret_access_key: "test_secret"
 config :sitevoice, token_signing_secret: "UDzkXu25F6YwWTGPjdAfdSq2BDLW4QFz"
 config :bcrypt_elixir, log_rounds: 1
 config :ash, policies: [show_policy_breakdowns?: true], disable_async?: true

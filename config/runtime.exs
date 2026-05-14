@@ -23,6 +23,20 @@ end
 config :sitevoice, SitevoiceWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
+if System.get_env("AWS_ACCESS_KEY_ID") do
+  endpoint_url = System.get_env("AWS_ENDPOINT_URL_S3", "https://fly.storage.tigris.dev")
+  uri = URI.parse(endpoint_url)
+
+  config :ex_aws,
+    access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+    secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY")
+
+  config :ex_aws, :s3,
+    scheme: "#{uri.scheme}://",
+    host: uri.host,
+    region: System.get_env("AWS_REGION", "auto")
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
@@ -123,17 +137,4 @@ if config_env() == :prod do
   #
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
 
-  if System.get_env("AWS_ACCESS_KEY_ID") do
-    endpoint_url = System.get_env("AWS_ENDPOINT_URL_S3", "https://fly.storage.tigris.dev")
-    uri = URI.parse(endpoint_url)
-
-    config :ex_aws,
-      access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
-      secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY")
-
-    config :ex_aws, :s3,
-      scheme: "#{uri.scheme}://",
-      host: uri.host,
-      region: System.get_env("AWS_REGION", "auto")
-  end
 end
