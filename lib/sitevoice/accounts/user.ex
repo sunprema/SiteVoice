@@ -4,7 +4,15 @@ defmodule Sitevoice.Accounts.User do
     domain: Sitevoice.Accounts,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshAuthentication]
+    extensions: [AshAuthentication, AshPaperTrail.Resource]
+
+  multitenancy do
+    strategy :attribute
+    attribute :organization_id
+    # global? true allows sign_in_with_password to find users without a tenant;
+    # the tenant is in the JWT, not the request — callers can't provide it upfront
+    global? true
+  end
 
   authentication do
     add_ons do
@@ -18,7 +26,7 @@ defmodule Sitevoice.Accounts.User do
         confirm_on_update? false
         require_interaction? true
         confirmed_at_field :confirmed_at
-        auto_confirm_actions [:sign_in_with_magic_link, :reset_password_with_token]
+        auto_confirm_actions [:reset_password_with_token]
         sender Sitevoice.Accounts.User.Senders.SendNewUserConfirmationEmail
       end
     end
@@ -38,7 +46,6 @@ defmodule Sitevoice.Accounts.User do
 
         resettable do
           sender Sitevoice.Accounts.User.Senders.SendPasswordResetEmail
-          # these configurations will be the default in a future release
           password_reset_action_name :reset_password_with_token
           request_password_reset_action_name :request_password_reset_token
         end
@@ -56,10 +63,71 @@ defmodule Sitevoice.Accounts.User do
   postgres do
     table "users"
     repo Sitevoice.Repo
+
+    custom_indexes do
+      index [:organization_id]
+      index [:organization_id, :email], unique: true
+      index [:organization_id, :role]
+    end
+  end
+
+  paper_trail do
+    attributes_as_attributes [:organization_id]
+  end
+
+  attributes do
+    uuid_primary_key :id
+
+    attribute :organization_id, :uuid, allow_nil?: false, public?: false
+
+    attribute :email, :ci_string do
+      allow_nil? false
+      public? true
+    end
+
+    attribute :hashed_password, :string do
+      allow_nil? false
+      sensitive? true
+    end
+
+    attribute :name, :string, allow_nil?: false, public?: true
+
+    attribute :role, :atom,
+      allow_nil?: false,
+      public?: true,
+      constraints: [one_of: [:foreman, :pm, :owner, :org_admin]],
+      default: :foreman
+
+    attribute :preferred_language, :atom,
+      public?: true,
+      constraints: [one_of: [:en, :es]],
+      default: :en
+
+    attribute :confirmed_at, :utc_datetime_usec
+    timestamps()
+  end
+
+  identities do
+    # AshAuthentication requires a global unique identity on the identity field
+    identity :unique_email, [:email]
+    # Additional per-org constraint for multitenancy semantics
+    identity :unique_email_per_org, [:organization_id, :email]
+  end
+
+  relationships do
+    belongs_to :organization, Sitevoice.Accounts.Organization,
+      allow_nil?: false,
+      define_attribute?: false
+
+    has_many :valid_api_keys, Sitevoice.Accounts.ApiKey do
+      filter expr(valid)
+    end
   end
 
   actions do
-    defaults [:read]
+    read :read do
+      primary? true
+    end
 
     read :get_by_subject do
       description "Get a user by the subject claim in a JWT"
@@ -68,27 +136,9 @@ defmodule Sitevoice.Accounts.User do
       prepare AshAuthentication.Preparations.FilterBySubject
     end
 
-    update :change_password do
-      # Use this action to allow users to change their password by providing
-      # their current password and a new password.
-
-      require_atomic? false
-      accept []
-      argument :current_password, :string, sensitive?: true, allow_nil?: false
-
-      argument :password, :string,
-        sensitive?: true,
-        allow_nil?: false,
-        constraints: [min_length: 8]
-
-      argument :password_confirmation, :string, sensitive?: true, allow_nil?: false
-
-      validate confirm(:password, :password_confirmation)
-
-      validate {AshAuthentication.Strategy.Password.PasswordValidation,
-                strategy_name: :password, password_argument: :current_password}
-
-      change {AshAuthentication.Strategy.Password.HashPasswordChange, strategy_name: :password}
+    read :get_by_email do
+      description "Looks up a user by their email"
+      get_by :email
     end
 
     read :sign_in_with_password do
@@ -106,7 +156,7 @@ defmodule Sitevoice.Accounts.User do
         sensitive? true
       end
 
-      # validates the provided email and password and generates a token
+      prepare Sitevoice.Accounts.Preparations.SetTenantMetadata
       prepare AshAuthentication.Strategy.Password.SignInPreparation
 
       metadata :token, :string do
@@ -116,14 +166,6 @@ defmodule Sitevoice.Accounts.User do
     end
 
     read :sign_in_with_token do
-      # In the generated sign in components, we validate the
-      # email and password directly in the LiveView
-      # and generate a short-lived token that can be used to sign in over
-      # a standard controller action, exchanging it for a standard token.
-      # This action performs that exchange. If you do not use the generated
-      # liveviews, you may remove this action, and set
-      # `sign_in_tokens_enabled? false` in the password strategy.
-
       description "Attempt to sign in using a short-lived sign in token."
       get? true
 
@@ -133,7 +175,6 @@ defmodule Sitevoice.Accounts.User do
         sensitive? true
       end
 
-      # validates the provided sign in token and generates a token
       prepare AshAuthentication.Strategy.Password.SignInWithTokenPreparation
 
       metadata :token, :string do
@@ -162,22 +203,39 @@ defmodule Sitevoice.Accounts.User do
         sensitive? true
       end
 
-      # Sets the email from the argument
+      argument :organization_id, :uuid do
+        allow_nil? false
+      end
+
+      argument :name, :string do
+        allow_nil? false
+      end
+
+      argument :role, :atom do
+        constraints [one_of: [:foreman, :pm, :owner, :org_admin]]
+        default :org_admin
+      end
+
       change set_attribute(:email, arg(:email))
+      change set_attribute(:organization_id, arg(:organization_id))
+      change set_attribute(:name, arg(:name))
+      change set_attribute(:role, arg(:role))
 
-      # Hashes the provided password
       change AshAuthentication.Strategy.Password.HashPasswordChange
-
-      # Generates an authentication token for the user
       change AshAuthentication.GenerateTokenChange
 
-      # validates that the password matches the confirmation
       validate AshAuthentication.Strategy.Password.PasswordConfirmationValidation
 
       metadata :token, :string do
         description "A JWT that can be used to authenticate the user."
         allow_nil? false
       end
+    end
+
+    create :invite do
+      accept [:email, :name, :role, :preferred_language]
+      change set_attribute(:organization_id, actor(:organization_id))
+      change Sitevoice.Accounts.Changes.HashPassword
     end
 
     action :request_password_reset_token do
@@ -187,13 +245,27 @@ defmodule Sitevoice.Accounts.User do
         allow_nil? false
       end
 
-      # creates a reset token and invokes the relevant senders
       run {AshAuthentication.Strategy.Password.RequestPasswordReset, action: :get_by_email}
     end
 
-    read :get_by_email do
-      description "Looks up a user by their email"
-      get_by :email
+    update :change_password do
+      require_atomic? false
+      accept []
+      argument :current_password, :string, sensitive?: true, allow_nil?: false
+
+      argument :password, :string,
+        sensitive?: true,
+        allow_nil?: false,
+        constraints: [min_length: 8]
+
+      argument :password_confirmation, :string, sensitive?: true, allow_nil?: false
+
+      validate confirm(:password, :password_confirmation)
+
+      validate {AshAuthentication.Strategy.Password.PasswordValidation,
+                strategy_name: :password, password_argument: :current_password}
+
+      change {AshAuthentication.Strategy.Password.HashPasswordChange, strategy_name: :password}
     end
 
     update :reset_password_with_token do
@@ -215,16 +287,9 @@ defmodule Sitevoice.Accounts.User do
         sensitive? true
       end
 
-      # validates the provided reset token
       validate AshAuthentication.Strategy.Password.ResetTokenValidation
-
-      # validates that the password matches the confirmation
       validate AshAuthentication.Strategy.Password.PasswordConfirmationValidation
-
-      # Hashes the provided password
       change AshAuthentication.Strategy.Password.HashPasswordChange
-
-      # Generates an authentication token for the user
       change AshAuthentication.GenerateTokenChange
     end
 
@@ -232,37 +297,44 @@ defmodule Sitevoice.Accounts.User do
       argument :api_key, :string, allow_nil?: false
       prepare AshAuthentication.Strategy.ApiKey.SignInPreparation
     end
+
+    update :update_profile do
+      accept [:name, :preferred_language]
+    end
+
+    update :update_role do
+      accept [:role]
+    end
+
+    destroy :destroy
   end
 
   policies do
     bypass AshAuthentication.Checks.AshAuthenticationInteraction do
       authorize_if always()
     end
-  end
 
-  attributes do
-    uuid_primary_key :id
-
-    attribute :email, :ci_string do
-      allow_nil? false
-      public? true
+    policy action(:invite) do
+      authorize_if actor_attribute_equals(:role, :org_admin)
     end
 
-    attribute :hashed_password, :string do
-      allow_nil? false
-      sensitive? true
+    policy action(:read) do
+      authorize_if actor_attribute_equals(:role, :org_admin)
+      authorize_if actor_attribute_equals(:role, :pm)
+      authorize_if expr(id == ^actor(:id))
     end
 
-    attribute :confirmed_at, :utc_datetime_usec
-  end
-
-  relationships do
-    has_many :valid_api_keys, Sitevoice.Accounts.ApiKey do
-      filter expr(valid)
+    policy action(:update_profile) do
+      authorize_if expr(id == ^actor(:id))
     end
-  end
 
-  identities do
-    identity :unique_email, [:email]
+    policy action(:update_role) do
+      authorize_if actor_attribute_equals(:role, :org_admin)
+    end
+
+    policy action(:destroy) do
+      forbid_if expr(id == ^actor(:id))
+      authorize_if actor_attribute_equals(:role, :org_admin)
+    end
   end
 end

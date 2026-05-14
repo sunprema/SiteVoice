@@ -26,6 +26,7 @@ defmodule SitevoiceWeb.Router do
 
     plug :load_from_bearer
     plug :set_actor, :user
+    plug SitevoiceWeb.Plugs.SetTenant
   end
 
   scope "/", SitevoiceWeb do

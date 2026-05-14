@@ -24,7 +24,7 @@ Every session:
 1. Ask which slice to work on (if not told)
 2. Read `slices/NN-name/CONTEXT.md` — load only what it specifies
 3. Read `slices/NN-name/SLICE.md` — understand what done looks like
-4. Read `slices/NN-name/TASKS.md` — work through tasks in order
+4. Read `slices/NN-name/TASKS.md` — work through tasks in order. This has checkboxes that should be marked after completion of the tasks. You can mark at the end of slice completion
 5. Check off tasks as you complete them
 6. Run tests before declaring a slice done
 
@@ -86,7 +86,7 @@ Update this table as slices are completed:
 | Slice | Name           | Status         |
 | ----- | -------------- | -------------- |
 | 00    | Foundation     | ✅ Complete    |
-| 01    | Auth           | ⬜ Not started |
+| 01    | Auth           | ✅ Complete    |
 | 02    | Projects       | ⬜ Not started |
 | 03    | Recording      | ⬜ Not started |
 | 04    | AI Pipeline    | ⬜ Not started |
@@ -113,9 +113,9 @@ Update this table as slices are completed:
 
 - Every tenanted resource must have a `multitenancy do strategy :attribute; attribute :organization_id end` block
 - `organization_id` is NEVER accepted from client request bodies — JWT only
-- `Ash.set_tenant/1` must be called at every process boundary:
-  - HTTP request → SetTenant plug
-  - Phoenix Channel join → explicit call
+- Tenant must be set at every process boundary:
+  - HTTP request → `Ash.PlugHelpers.set_tenant(conn, org_id)` in SetTenant plug
+  - Phoenix Channel join → `Ash.PlugHelpers.set_tenant(socket, org_id)`
   - Phoenix Channel handle_in → re-call every time
   - Oban worker perform/1 → first line, always
   - Ash Reactor → SetTenant step with wait_for on all Ash steps

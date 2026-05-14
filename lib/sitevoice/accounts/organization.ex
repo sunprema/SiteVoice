@@ -30,6 +30,10 @@ defmodule Sitevoice.Accounts.Organization do
     identity :unique_slug, [:slug]
   end
 
+  relationships do
+    has_many :users, Sitevoice.Accounts.User
+  end
+
   actions do
     create :register do
       accept [:name]

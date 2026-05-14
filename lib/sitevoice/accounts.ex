@@ -6,6 +6,7 @@ defmodule Sitevoice.Accounts do
     resource Sitevoice.Accounts.Organization
     resource Sitevoice.Accounts.Token
     resource Sitevoice.Accounts.User
+    resource Sitevoice.Accounts.User.Version
     resource Sitevoice.Accounts.ApiKey
   end
 end
