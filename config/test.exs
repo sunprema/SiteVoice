@@ -13,6 +13,8 @@ config :ash, policies: [show_policy_breakdowns?: true], disable_async?: true
 config :sitevoice, :openai_req_options, plug: {Req.Test, :whisper_req}
 config :sitevoice, :anthropic_req_options, plug: {Req.Test, :claude_req}
 
+config :sitevoice, :imprintor_mod, Sitevoice.Test.ImprintorStub
+
 config :sitevoice, :openai_api_key, "test_openai_key"
 config :sitevoice, :anthropic_api_key, "test_anthropic_key"
 

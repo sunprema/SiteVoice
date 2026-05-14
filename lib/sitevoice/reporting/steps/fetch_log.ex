@@ -3,7 +3,7 @@ defmodule Sitevoice.Steps.FetchLog do
 
   def run(%{log_id: log_id, organization_id: org_id}, _, _) do
     Ash.get(Sitevoice.Reporting.DailyLog, log_id,
-      load: [:photos, :foreman],
+      load: [:organization, :project, :foreman, :photos],
       authorize?: false,
       tenant: org_id
     )

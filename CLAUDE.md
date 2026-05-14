@@ -91,7 +91,7 @@ Update this table as slices are completed:
 | 02    | Projects       | ✅ Complete    |
 | 03    | Recording      | ✅ Complete    |
 | 04    | AI Pipeline    | ✅ Complete    |
-| 05    | PDF Generation | ⬜ Not started |
+| 05    | PDF Generation | ✅ Complete    |
 | 06    | Real-time      | ⬜ Not started |
 | 07    | Notifications  | ⬜ Not started |
 | 08    | Integrations   | ⬜ Not started |

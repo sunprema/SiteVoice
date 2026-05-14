@@ -67,6 +67,14 @@ defmodule Sitevoice.Reporting.Reactors.ProcessRecording do
     argument :binary, result(:generate_pdf)
     argument :key, input(:log_id)
     argument :organization_id, input(:organization_id)
+    argument :project_id, result(:fetch_log, [:project_id])
+  end
+
+  update :save_pdf_key, Sitevoice.Reporting.DailyLog, :update_pdf do
+    initial result(:fetch_log)
+    tenant input(:organization_id)
+    inputs %{pdf_key: result(:store_pdf, [:key])}
+    wait_for :store_pdf
   end
 
   step :notify, Sitevoice.Steps.BroadcastReady do
