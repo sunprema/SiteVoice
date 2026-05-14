@@ -1,3 +1,56 @@
+---
+name: phoenix-framework
+description: "Use this skill working with Phoenix Framework. Consult this when working with the web layer, controllers, views, liveviews etc."
+metadata:
+  managed-by: usage-rules
+---
+
+<!-- usage-rules-skill-start -->
+
+## Additional References
+
+- [ecto](references/ecto.md)
+- [elixir](references/elixir.md)
+- [html](references/html.md)
+- [liveview](references/liveview.md)
+- [phoenix](references/phoenix.md)
+
+## Searching Documentation
+
+```sh
+mix usage_rules.search_docs "search term" -p phoenix -p phoenix_ecto -p phoenix_html -p phoenix_live_dashboard -p phoenix_live_reload -p phoenix_live_view
+```
+
+## Available Mix Tasks
+
+- `mix compile.phoenix`
+- `mix phx` - Prints Phoenix help information
+- `mix phx.digest` - Digests and compresses static files
+- `mix phx.digest.clean` - Removes old versions of static assets.
+- `mix phx.gen` - Lists all available Phoenix generators
+- `mix phx.gen.auth` - Generates authentication logic for a resource
+- `mix phx.gen.auth.hashing_library`
+- `mix phx.gen.auth.injector`
+- `mix phx.gen.auth.migration`
+- `mix phx.gen.cert` - Generates a self-signed certificate for HTTPS testing
+- `mix phx.gen.channel` - Generates a Phoenix channel
+- `mix phx.gen.context` - Generates a context with functions around an Ecto schema
+- `mix phx.gen.embedded` - Generates an embedded Ecto schema file
+- `mix phx.gen.html` - Generates context and controller for an HTML resource
+- `mix phx.gen.json` - Generates context and controller for a JSON resource
+- `mix phx.gen.live` - Generates LiveView, templates, and context for a resource
+- `mix phx.gen.notifier` - Generates a notifier that delivers emails by default
+- `mix phx.gen.presence` - Generates a Presence tracker
+- `mix phx.gen.release` - Generates release files and optional Dockerfile for release-based deployments
+- `mix phx.gen.schema` - Generates an Ecto schema and migration file
+- `mix phx.gen.secret` - Generates a secret
+- `mix phx.gen.socket` - Generates a Phoenix socket handler
+- `mix phx.routes` - Prints all routes
+- `mix phx.server` - Starts applications and their servers
+- `mix compile.phoenix_live_view`
+- `mix phoenix_live_view.upgrade`
+<!-- usage-rules-skill-end -->
+
 This is a web application written using the Phoenix web framework.
 
 ## Project guidelines
@@ -16,7 +69,7 @@ This is a web application written using the Phoenix web framework.
 - Out of the box, `core_components.ex` imports an `<.icon name="hero-x-mark" class="w-5 h-5"/>` component for hero icons. **Always** use the `<.icon>` component for icons, **never** use `Heroicons` modules or similar
 - **Always** use the imported `<.input>` component for form inputs from `core_components.ex` when available. `<.input>` is imported and using it will save steps and prevent errors
 - If you override the default input classes (`<.input class="myclass px-2 py-1 rounded-lg">)`) class with your own values, no default classes are inherited, so your
-custom classes must fully style the input
+  custom classes must fully style the input
 
 ### JS and CSS guidelines
 
@@ -43,10 +96,10 @@ custom classes must fully style the input
 - Ensure **clean typography, spacing, and layout balance** for a refined, premium look
 - Focus on **delightful details** like hover effects, loading states, and smooth page transitions
 
-
 <!-- usage-rules-start -->
 
 <!-- phoenix:elixir-start -->
+
 ## Elixir guidelines
 
 - Elixir lists **do not support index based access via the access syntax**
@@ -64,7 +117,7 @@ custom classes must fully style the input
       Enum.at(mylist, i)
 
 - Elixir variables are immutable, but can be rebound, so for block expressions like `if`, `case`, `cond`, etc
-  you *must* bind the result of the expression to a variable if you want to use it and you CANNOT rebind the result inside the expression, ie:
+  you _must_ bind the result of the expression to a variable if you want to use it and you CANNOT rebind the result inside the expression, ie:
 
       # INVALID: we are rebinding inside the `if` and the result never gets assigned
       if connected?(socket) do
@@ -97,13 +150,14 @@ custom classes must fully style the input
 - **Avoid** `Process.sleep/1` and `Process.alive?/1` in tests
   - Instead of sleeping to wait for a process to finish, **always** use `Process.monitor/1` and assert on the DOWN message:
 
-      ref = Process.monitor(pid)
-      assert_receive {:DOWN, ^ref, :process, ^pid, :normal}
+    ref = Process.monitor(pid)
+    assert_receive {:DOWN, ^ref, :process, ^pid, :normal}
 
-   - Instead of sleeping to synchronize before the next call, **always** use `_ = :sys.get_state/1` to ensure the process has handled prior messages
-<!-- phoenix:elixir-end -->
+  - Instead of sleeping to synchronize before the next call, **always** use `_ = :sys.get_state/1` to ensure the process has handled prior messages
+  <!-- phoenix:elixir-end -->
 
 <!-- phoenix:phoenix-start -->
+
 ## Phoenix guidelines
 
 - Remember Phoenix router `scope` blocks include an optional alias which is prefixed for all routes within the scope. **Always** be mindful of this when creating routes within a scope to avoid duplicate module prefixes.
@@ -121,8 +175,8 @@ custom classes must fully style the input
 - `Phoenix.View` no longer is needed or included with Phoenix, don't use it
 <!-- phoenix:phoenix-end -->
 
-
 <!-- phoenix:html-start -->
+
 ## Phoenix HTML guidelines
 
 - Phoenix templates **always** use `~H` or .html.heex files (known as HEEx), **never** use `~E`
@@ -152,7 +206,7 @@ custom classes must fully style the input
           ...
       <% end %>
 
-- HEEx require special tag annotation if you want to insert literal curly's like `{` or `}`. If you want to show a textual code snippet on the page in a `<pre>` or `<code>` block you *must* annotate the parent tag with `phx-no-curly-interpolation`:
+- HEEx require special tag annotation if you want to insert literal curly's like `{` or `}`. If you want to show a textual code snippet on the page in a `<pre>` or `<code>` block you _must_ annotate the parent tag with `phx-no-curly-interpolation`:
 
       <code phx-no-curly-interpolation>
         let obj = {key: "val"}
@@ -185,26 +239,28 @@ custom classes must fully style the input
 
   **Always** do this:
 
-      <div id={@id}>
-        {@my_assign}
-        <%= if @some_block_condition do %>
-          {@another_assign}
-        <% end %>
-      </div>
+        <div id={@id}>
+          {@my_assign}
+          <%= if @some_block_condition do %>
+            {@another_assign}
+          <% end %>
+        </div>
 
   and **Never** do this – the program will terminate with a syntax error:
 
-      <%!-- THIS IS INVALID NEVER EVER DO THIS --%>
-      <div id="<%= @invalid_interpolation %>">
-        {if @invalid_block_construct do}
-        {end}
-      </div>
-<!-- phoenix:html-end -->
+        <%!-- THIS IS INVALID NEVER EVER DO THIS --%>
+        <div id="<%= @invalid_interpolation %>">
+          {if @invalid_block_construct do}
+          {end}
+        </div>
+
+  <!-- phoenix:html-end -->
 
 <!-- phoenix:liveview-start -->
+
 ## Phoenix LiveView guidelines
 
-- **Never** use the deprecated `live_redirect` and `live_patch` functions, instead **always** use the `<.link navigate={href}>` and  `<.link patch={href}>` in templates, and `push_navigate` and `push_patch` functions LiveViews
+- **Never** use the deprecated `live_redirect` and `live_patch` functions, instead **always** use the `<.link navigate={href}>` and `<.link patch={href}>` in templates, and `push_navigate` and `push_patch` functions LiveViews
 - **Avoid LiveComponent's** unless you have a strong, specific need for them
 - LiveViews should be named like `AppWeb.WeatherLive`, with a `Live` suffix. When you go to add LiveView routes to the router, the default `:browser` scope is **already aliased** with the `AppWeb` module, so you can just do `live "/weather", WeatherLive`
 
@@ -224,7 +280,7 @@ custom classes must fully style the input
         </div>
       </div>
 
-- LiveView streams are *not* enumerable, so you cannot use `Enum.filter/2` or `Enum.reject/2` on them. Instead, if you want to filter, prune, or refresh a list of items on the UI, you **must refetch the data and re-stream the entire stream collection, passing reset: true**:
+- LiveView streams are _not_ enumerable, so you cannot use `Enum.filter/2` or `Enum.reject/2` on them. Instead, if you want to filter, prune, or refresh a list of items on the UI, you **must refetch the data and re-stream the entire stream collection, passing reset: true**:
 
       def handle_event("filter", %{"filter" => filter}, socket) do
         # re-fetch the messages based on the filter
@@ -237,7 +293,7 @@ custom classes must fully style the input
          |> stream(:messages, messages, reset: true)}
       end
 
-- LiveView streams *do not support counting or empty states*. If you need to display a count, you must track it using a separate assign. For empty states, you can use Tailwind classes:
+- LiveView streams _do not support counting or empty states_. If you need to display a count, you must track it using a separate assign. For empty states, you can use Tailwind classes:
 
       <div id="tasks" phx-update="stream">
         <div class="hidden only:block">No tasks yet</div>

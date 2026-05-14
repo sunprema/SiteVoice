@@ -1,0 +1,134 @@
+---
+name: ash-framework
+description: "Use this skill working with Ash Framework or any of its extensions. Always consult this when making any domain changes, features or fixes."
+metadata:
+  managed-by: usage-rules
+---
+
+<database_migration>
+
+Use `mix ash.codegen` for creating the db migration files. Do not create migration files directly. If you need to really create migration files using ecto, you should provide the reason and ask the permission from user.
+use `mix ash.migrate` for running the db migration. do not use ecto migration directly without asking for permission.
+
+</database-migration>
+
+<!-- usage-rules-skill-start -->
+
+## Additional References
+
+- [actions](references/actions.md)
+- [aggregates](references/aggregates.md)
+- [authorization](references/authorization.md)
+- [calculations](references/calculations.md)
+- [code_interfaces](references/code_interfaces.md)
+- [code_structure](references/code_structure.md)
+- [data_layers](references/data_layers.md)
+- [exist_expressions](references/exist_expressions.md)
+- [generating_code](references/generating_code.md)
+- [migrations](references/migrations.md)
+- [query_filter](references/query_filter.md)
+- [querying_data](references/querying_data.md)
+- [relationships](references/relationships.md)
+- [testing](references/testing.md)
+- [best_practices](references/best_practices.md)
+- [debugging_and_error_handling](references/debugging_and_error_handling.md)
+- [defining_triggers](references/defining_triggers.md)
+- [multi_tenancy_support](references/multi_tenancy_support.md)
+- [scheduled_actions](references/scheduled_actions.md)
+- [setting_up_ash_oban](references/setting_up_ash_oban.md)
+- [triggering_jobs_programmatically](references/triggering_jobs_programmatically.md)
+- [working_with_actors](references/working_with_actors.md)
+- [debugging_form_submissions](references/debugging_form_submissions.md)
+- [error_handling](references/error_handling.md)
+- [form_integration](references/form_integration.md)
+- [nested_forms](references/nested_forms.md)
+- [union_forms](references/union_forms.md)
+- [advanced_features](references/advanced_features.md)
+- [check_constraints](references/check_constraints.md)
+- [configuration](references/configuration.md)
+- [custom_indexes](references/custom_indexes.md)
+- [custom_sql_statements](references/custom_sql_statements.md)
+- [foreign_keys](references/foreign_keys.md)
+- [multitenancy](references/multitenancy.md)
+- [ash](references/ash.md)
+- [ash_authentication](references/ash_authentication.md)
+- [ash_json_api](references/ash_json_api.md)
+- [ash_oban](references/ash_oban.md)
+- [ash_phoenix](references/ash_phoenix.md)
+- [ash_postgres](references/ash_postgres.md)
+- [ash_typescript](references/ash_typescript.md)
+
+## Searching Documentation
+
+```sh
+mix usage_rules.search_docs "search term" -p ash -p ash_authentication -p ash_authentication_phoenix -p ash_cloak -p ash_json_api -p ash_oban -p ash_paper_trail -p ash_phoenix -p ash_postgres -p ash_state_machine -p ash_typescript
+```
+
+## Available Mix Tasks
+
+- `mix ash` - Prints Ash help information
+- `mix ash.codegen` - Runs all codegen tasks for any extension on any resource/domain in your application.
+- `mix ash.extend` - Adds an extension or extensions to the given domain/resource
+- `mix ash.gen.base_resource` - Generates a base resource. This is a module that you can use instead of `Ash.Resource`, for consistency.
+- `mix ash.gen.change` - Generates a custom change module.
+- `mix ash.gen.custom_expression` - Generates a custom expression module.
+- `mix ash.gen.domain` - Generates an Ash.Domain
+- `mix ash.gen.enum` - Generates an Ash.Type.Enum
+- `mix ash.gen.gettext` - Copies Ash's .pot file for error message translation
+- `mix ash.gen.preparation` - Generates a custom preparation module.
+- `mix ash.gen.resource` - Generate and configure an Ash.Resource.
+- `mix ash.gen.validation` - Generates a custom validation module.
+- `mix ash.generate_livebook` - Generates a Livebook for each Ash domain
+- `mix ash.generate_policy_charts` - Generates a Mermaid Flow Chart for a given resource's policies.
+- `mix ash.generate_resource_diagrams` - Generates Mermaid Resource Diagrams for each Ash domain
+- `mix ash.gettext.extract` - Extracts Ash error messages into a .pot file
+- `mix ash.install` - Installs Ash into a project. Should be called with `mix igniter.install ash`
+- `mix ash.migrate` - Runs all migration tasks for any extension on any resource/domain in your application.
+- `mix ash.patch.extend` - Adds an extension or extensions to the given domain/resource
+- `mix ash.reset` - Runs all tear down & setup tasks for any extension on any resource/domain in your application.
+- `mix ash.rollback` - Runs all rollback tasks for any extension on any resource/domain in your application.
+- `mix ash.setup` - Runs all setup tasks for any extension on any resource/domain in your application.
+- `mix ash.tear_down` - Runs all tear_down tasks for any extension on any resource/domain in your application.
+- `mix ash_authentication.add_add_on` - Adds the provided add-on to your user resource
+- `mix ash_authentication.add_strategy` - Adds the provided strategy or strategies to your user resource
+- `mix ash_authentication.install` - Installs AshAuthentication. Invoke with `mix igniter.install ash_authentication`
+- `mix ash_authentication.upgrade`
+- `mix ash_authentication.phoenix.routes` - Prints all routes generated by AshAuthentication Phoenix
+- `mix ash_authentication_phoenix.install` - Installs AshAuthenticationPhoenix. Invoke with `mix igniter.install ash_authentication_phoenix`
+- `mix ash_authentication_phoenix.upgrade`
+- `mix ash_json_api.install` - Installs AshJsonApi. Should be run with `mix igniter.install ash_json_api`
+- `mix ash_json_api.routes` - Prints all routes by AshJsonApiRouter
+- `mix ash_oban.install` - Installs AshOban and Oban
+- `mix ash_oban.install.docs`
+- `mix ash_oban.set_default_module_names` - Set module names to their default values for triggers and scheduled actions
+- `mix ash_oban.set_default_module_names.docs`
+- `mix ash_oban.upgrade`
+- `mix ash_phoenix.gen.html` - Generates a controller and HTML views for an existing Ash resource.
+- `mix ash_phoenix.gen.live` - Generates liveviews for a given domain and resource.
+- `mix ash_phoenix.install` - Installs AshPhoenix into a project. Should be called with `mix igniter.install ash_phoenix`
+- `mix ash_postgres.create` - Creates the repository storage
+- `mix ash_postgres.drop` - Drops the repository storage for the repos in the specified (or configured) domains
+- `mix ash_postgres.gen.resources` - Generates resources based on a database schema
+- `mix ash_postgres.generate_migrations` - Generates migrations, and stores a snapshot of your resources
+- `mix ash_postgres.install` - Installs AshPostgres. Should be run with `mix igniter.install ash_postgres`
+- `mix ash_postgres.migrate` - Runs the repository migrations for all repositories in the provided (or configured) domains
+- `mix ash_postgres.rollback` - Rolls back the repository migrations for all repositories in the provided (or configured) domains
+- `mix ash_postgres.setup_vector` - Sets up pgvector for AshPostgres
+- `mix ash_postgres.setup_vector.docs`
+- `mix ash_postgres.squash_snapshots` - Cleans snapshots folder, leaving only one snapshot per resource
+- `mix ash_state_machine.generate_flow_charts` - Generates Mermaid Flow Charts for each resource using `AshStateMachine`
+- `mix ash_state_machine.install` - Installs AshStateMachine
+- `mix ash_state_machine.install.docs`
+- `mix ash_typescript.codegen` - Generates TypeScript types for Ash Rpc-calls
+- `mix ash_typescript.install` - Installs AshTypescript into a project. Should be called with `mix igniter.install ash_typescript`
+- `mix ash_typescript.npm_install`
+<!-- usage-rules-skill-end -->
+
+## Oban Worker Patterns (Phase 5)
+
+- Workers need `require Ash.Query` — `use Oban.Worker` does NOT import Ash macros; the `^var` pin inside `Ash.Query.filter` fails without this
+- `Ash.Query.filter` does NOT support `field in ^list` syntax (Elixir parser rejects `in` as a binary op + `^` outside match) — use named read action with `filter expr(field in ^arg(:ids))` + `Ash.Query.for_read(:action, %{ids: ids})`
+- `Ash.bulk_create` with `upsert? true` action REQUIRES explicit `upsert_fields: [...]` — without it raises ArgumentError at runtime
+- `use Oban.Testing, repo: Repo` defines a `perform_job` macro — name your test helpers differently (e.g. `run_worker`)
+- Oban config: `queues: [default: 10, data_ingestion: 5, analytics: 5]` in config.exs; `testing: :manual` in test.exs
+- Map attribute (`:map` type) round-trips through JSON — atom keys become string keys; test with `map["key"]` not `map.key`

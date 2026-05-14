@@ -12,7 +12,8 @@ defmodule Sitevoice.MixProject do
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
       listeners: [Phoenix.CodeReloader],
-      consolidate_protocols: Mix.env() != :dev
+      consolidate_protocols: Mix.env() != :dev,
+      usage_rules: usage_rules()
     ]
   end
 
@@ -29,6 +30,34 @@ defmodule Sitevoice.MixProject do
   def cli do
     [
       preferred_envs: [precommit: :test]
+    ]
+  end
+
+  defp usage_rules do
+    # Example for those using claude.
+    [
+      file: "CLAUDE.md",
+      # rules to include directly in CLAUDE.md
+      usage_rules: ["usage_rules:all"],
+      skills: [
+        location: ".claude/skills",
+        # build skills that combine multiple usage rules
+        build: [
+          "ash-framework": [
+            # The description tells people how to use this skill.
+            description:
+              "Use this skill working with Ash Framework or any of its extensions. Always consult this when making any domain changes, features or fixes.",
+            # Include all Ash dependencies
+            usage_rules: [:ash, ~r/^ash_/]
+          ],
+          "phoenix-framework": [
+            description:
+              "Use this skill working with Phoenix Framework. Consult this when working with the web layer, controllers, views, liveviews etc.",
+            # Include all Phoenix dependencies
+            usage_rules: [:phoenix, ~r/^phoenix_/]
+          ]
+        ]
+      ]
     ]
   end
 
@@ -88,7 +117,18 @@ defmodule Sitevoice.MixProject do
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+      {:imprintor, "~> 0.1.0"},
+      {:ex_aws, "~> 2.5"},
+      {:ex_aws_s3, "~> 2.5"},
+      {:reactor, "~> 1.0.1"},
+      {:rustler, "~> 0.37.3", runtime: false},
+      {:mdex, "~> 0.11"},
+      {:live_agent,
+       if(Mix.env() == :dev and File.dir?("/Volumes/x/projects/elixir_libs/live_agent"),
+         do: [path: "/Volumes/x/projects/elixir_libs/live_agent", override: true, only: :dev],
+         else: [github: "sunprema/live_agent", branch: "main", only: :dev]
+       )}
     ]
   end
 
