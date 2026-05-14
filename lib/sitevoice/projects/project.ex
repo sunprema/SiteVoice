@@ -46,6 +46,7 @@ defmodule Sitevoice.Projects.Project do
       define_attribute?: false
 
     has_many :memberships, Sitevoice.Projects.ProjectMembership
+    has_many :daily_logs, Sitevoice.Reporting.DailyLog
   end
 
   calculations do

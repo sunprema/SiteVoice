@@ -1,9 +1,17 @@
 defmodule Sitevoice.Projects.Calculations.ReportCount do
-  # Implemented in Slice 03 when DailyLog exists
   use Ash.Resource.Calculation
+
+  require Ash.Query
 
   @impl true
   def calculate(records, _opts, _context) do
-    {:ok, Enum.map(records, fn _ -> 0 end)}
+    results =
+      Enum.map(records, fn record ->
+        Ash.Query.new(Sitevoice.Reporting.DailyLog)
+        |> Ash.Query.filter(project_id == ^record.id and status == :submitted)
+        |> Ash.count!(tenant: to_string(record.organization_id), authorize?: false)
+      end)
+
+    {:ok, results}
   end
 end
