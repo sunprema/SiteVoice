@@ -1,4 +1,5 @@
 # DOMAIN_MODEL.md
+
 # SiteVoice AI — Ash Domain Model
 
 **Version:** 1.0
@@ -16,8 +17,8 @@ This document is the authoritative reference for all Ash resource definitions, r
 2. [Relationship Map](#2-relationship-map)
 3. [SiteVoice.Accounts](#3-sitevoiceaccounts)
    - Organization
-   - User
-   - Token
+   - User (created by AshAuthentication igniter, only make required changes)
+   - Token (created by AshAuthentication igniter, only make required changes)
 4. [SiteVoice.Projects](#4-sitevoiceprojects)
    - Project
    - ProjectMembership
@@ -86,6 +87,7 @@ end
 ```
 
 `organization_id` is:
+
 - Always `allow_nil?: false`
 - Always `public?: false` (never serialized in API responses)
 - Never accepted from client request bodies — sourced from JWT only
@@ -247,6 +249,7 @@ end
 ### `SiteVoice.Accounts.User`
 
 Tenanted. The actor in all Ash Policy evaluations. Belongs to exactly one Organization.
+**KEEP IN MIND THAT ASH AUTHENTICATION IGNITER HAS CREATED THIS RESOURCE ALREADY, YOU CAN MAKE REQUIRED CHANGES**
 
 ```elixir
 defmodule SiteVoice.Accounts.User do
@@ -396,6 +399,7 @@ end
 ### `SiteVoice.Accounts.Token`
 
 Global (not tenanted). Managed by AshAuthentication. Stores refresh tokens and revocation records.
+**KEEP IN MIND THAT ASH AUTHENTICATION IGNITER HAS CREATED THIS RESOURCE ALREADY, YOU CAN MAKE REQUIRED CHANGES**
 
 ```elixir
 defmodule SiteVoice.Accounts.Token do
@@ -1273,13 +1277,13 @@ end
 
 Custom `Ash.Resource.Change` modules. All located in `lib/site_voice/{domain}/resources/changes/`.
 
-| Module | Used In | Purpose |
-|---|---|---|
-| `Accounts.Changes.GenerateSlug` | Organization `:register` | Derives URL-safe slug from org name |
-| `Accounts.Changes.HashPassword` | User `:invite` | Bcrypt hashes raw password before save |
-| `Projects.Changes.NormalizeCode` | Project `:create` | Upcases and trims project code |
-| `Reporting.Changes.EnqueueProcessing` | DailyLog `:submit_recording` | Inserts Oban job after successful create |
-| `Reporting.Changes.DispatchIntegrations` | DailyLog `:approve_and_submit` | Inserts Oban jobs for Procore, email |
+| Module                                   | Used In                        | Purpose                                  |
+| ---------------------------------------- | ------------------------------ | ---------------------------------------- |
+| `Accounts.Changes.GenerateSlug`          | Organization `:register`       | Derives URL-safe slug from org name      |
+| `Accounts.Changes.HashPassword`          | User `:invite`                 | Bcrypt hashes raw password before save   |
+| `Projects.Changes.NormalizeCode`         | Project `:create`              | Upcases and trims project code           |
+| `Reporting.Changes.EnqueueProcessing`    | DailyLog `:submit_recording`   | Inserts Oban job after successful create |
+| `Reporting.Changes.DispatchIntegrations` | DailyLog `:approve_and_submit` | Inserts Oban jobs for Procore, email     |
 
 ### `EnqueueProcessing` — Detail
 
@@ -1340,14 +1344,14 @@ end
 
 Custom `Ash.Resource.Calculation` modules. Located in `lib/site_voice/{domain}/resources/calculations/`.
 
-| Module | Resource | Return Type | Purpose |
-|---|---|---|---|
-| `Reporting.Calculations.PdfUrl` | DailyLog | `:string` | Presigned Tigris URL for PDF (1hr expiry) |
-| `Reporting.Calculations.AudioUrl` | DailyLog | `:string` | Presigned Tigris URL for audio (admin only) |
-| `Reporting.Calculations.IsLate` | DailyLog | `:boolean` | True if submitted after 6 PM on report date |
-| `Reporting.Calculations.PhotoUrl` | Photo | `:string` | Presigned Tigris URL for photo (1hr expiry) |
-| `Projects.Calculations.ReportCount` | Project | `:integer` | Count of submitted DailyLogs for project |
-| `Projects.Calculations.LastReportDate` | Project | `:date` | Date of most recent submitted DailyLog |
+| Module                                 | Resource | Return Type | Purpose                                     |
+| -------------------------------------- | -------- | ----------- | ------------------------------------------- |
+| `Reporting.Calculations.PdfUrl`        | DailyLog | `:string`   | Presigned Tigris URL for PDF (1hr expiry)   |
+| `Reporting.Calculations.AudioUrl`      | DailyLog | `:string`   | Presigned Tigris URL for audio (admin only) |
+| `Reporting.Calculations.IsLate`        | DailyLog | `:boolean`  | True if submitted after 6 PM on report date |
+| `Reporting.Calculations.PhotoUrl`      | Photo    | `:string`   | Presigned Tigris URL for photo (1hr expiry) |
+| `Projects.Calculations.ReportCount`    | Project  | `:integer`  | Count of submitted DailyLogs for project    |
+| `Projects.Calculations.LastReportDate` | Project  | `:date`     | Date of most recent submitted DailyLog      |
 
 ### `PdfUrl` — Detail
 
@@ -1378,103 +1382,103 @@ The six report section attributes on `DailyLog` are `{:array, :map}` stored as J
 
 ```json
 {
-  "crew":          "Martinez",
-  "headcount":     6,
-  "trade":         "Rebar installation",
-  "hours":         "07:00-16:00",
+  "crew": "Martinez",
+  "headcount": 6,
+  "trade": "Rebar installation",
+  "hours": "07:00-16:00",
   "subcontractor": true
 }
 ```
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `crew` | string | yes | Crew name or company |
-| `headcount` | integer | yes | Number of workers |
-| `trade` | string | yes | Work type |
-| `hours` | string | no | e.g. "07:00-16:00" |
-| `subcontractor` | boolean | no | Defaults false |
+| Field           | Type    | Required | Notes                |
+| --------------- | ------- | -------- | -------------------- |
+| `crew`          | string  | yes      | Crew name or company |
+| `headcount`     | integer | yes      | Number of workers    |
+| `trade`         | string  | yes      | Work type            |
+| `hours`         | string  | no       | e.g. "07:00-16:00"   |
+| `subcontractor` | boolean | no       | Defaults false       |
 
 ### Progress Entry
 
 ```json
 {
-  "description":        "North wall framing approximately 80% complete",
-  "location":           "Level 4",
+  "description": "North wall framing approximately 80% complete",
+  "location": "Level 4",
   "percentage_complete": 80
 }
 ```
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `description` | string | yes | What was accomplished |
-| `location` | string | no | Level, zone, or area |
-| `percentage_complete` | integer | no | 0–100 |
+| Field                 | Type    | Required | Notes                 |
+| --------------------- | ------- | -------- | --------------------- |
+| `description`         | string  | yes      | What was accomplished |
+| `location`            | string  | no       | Level, zone, or area  |
+| `percentage_complete` | integer | no       | 0–100                 |
 
 ### Equipment Entry
 
 ```json
 {
-  "item":   "Crane 2",
+  "item": "Crane 2",
   "status": "offline",
-  "note":   "Hydraulic issue, resolved 12:00 PM"
+  "note": "Hydraulic issue, resolved 12:00 PM"
 }
 ```
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `item` | string | yes | Equipment name |
-| `status` | string | yes | "operational" \| "offline" \| "idle" \| "on_order" |
-| `note` | string | no | Additional context |
+| Field    | Type   | Required | Notes                                              |
+| -------- | ------ | -------- | -------------------------------------------------- |
+| `item`   | string | yes      | Equipment name                                     |
+| `status` | string | yes      | "operational" \| "offline" \| "idle" \| "on_order" |
+| `note`   | string | no       | Additional context                                 |
 
 ### Materials Entry
 
 ```json
 {
-  "item":        "Concrete 4000 PSI",
-  "quantity":    "8 yards",
+  "item": "Concrete 4000 PSI",
+  "quantity": "8 yards",
   "received_at": "14:00",
-  "note":        "No issues — driver signed"
+  "note": "No issues — driver signed"
 }
 ```
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `item` | string | yes | Material name |
-| `quantity` | string | no | Amount with units |
-| `received_at` | string | no | Time received |
-| `note` | string | no | Delivery notes |
+| Field         | Type   | Required | Notes             |
+| ------------- | ------ | -------- | ----------------- |
+| `item`        | string | yes      | Material name     |
+| `quantity`    | string | no       | Amount with units |
+| `received_at` | string | no       | Time received     |
+| `note`        | string | no       | Delivery notes    |
 
 ### Delays Entry
 
 ```json
 {
   "description": "Crane 2 offline AM — approximately 3 hours lost",
-  "cause":       "Equipment failure",
-  "impact":      "Level 4 framing schedule delayed",
-  "hours_lost":  3
+  "cause": "Equipment failure",
+  "impact": "Level 4 framing schedule delayed",
+  "hours_lost": 3
 }
 ```
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `description` | string | yes | What happened |
-| `cause` | string | no | Root cause |
-| `impact` | string | no | Downstream effect |
-| `hours_lost` | number | no | Estimated hours lost |
+| Field         | Type   | Required | Notes                |
+| ------------- | ------ | -------- | -------------------- |
+| `description` | string | yes      | What happened        |
+| `cause`       | string | no       | Root cause           |
+| `impact`      | string | no       | Downstream effect    |
+| `hours_lost`  | number | no       | Estimated hours lost |
 
 ### Safety Entry
 
 ```json
 {
-  "description":   "Morning toolbox talk completed. No incidents. Harness check 07:15.",
+  "description": "Morning toolbox talk completed. No incidents. Harness check 07:15.",
   "incident_type": "none"
 }
 ```
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `description` | string | yes | Safety observation |
-| `incident_type` | string | no | "none" \| "near_miss" \| "first_aid" \| "recordable" |
+| Field           | Type   | Required | Notes                                                |
+| --------------- | ------ | -------- | ---------------------------------------------------- |
+| `description`   | string | yes      | Safety observation                                   |
+| `incident_type` | string | no       | "none" \| "near_miss" \| "first_aid" \| "recordable" |
 
 ---
 
@@ -1482,35 +1486,36 @@ The six report section attributes on `DailyLog` are `{:array, :map}` stored as J
 
 Summary of which roles can perform which actions across resources. Tenant scoping (organization_id) is applied before any policy check — policies express user-level rules only.
 
-| Resource | Action | foreman | pm | owner | org_admin | platform_admin | no actor |
-|---|---|---|---|---|---|---|---|
-| Organization | :register | — | — | — | — | ✓ | ✓ |
-| Organization | :read (own) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| Organization | :update | — | — | — | ✓ | ✓ | — |
-| User | :invite | — | — | — | ✓ | — | — |
-| User | :read | self only | ✓ | — | ✓ | — | — |
-| User | :update_profile | self only | self only | self only | ✓ | — | — |
-| User | :update_role | — | — | — | ✓ | — | — |
-| Project | :create | — | ✓ | — | ✓ | — | — |
-| Project | :read | member only | ✓ | ✓ | ✓ | — | — |
-| Project | :update | — | ✓ | — | ✓ | — | — |
-| ProjectMembership | :add_member | — | ✓ | — | ✓ | — | — |
-| DailyLog | :submit_recording | ✓ | ✓ | — | ✓ | — | — |
-| DailyLog | :apply_transcript | — | — | — | — | — | ✓ |
-| DailyLog | :apply_structure | — | — | — | — | — | ✓ |
-| DailyLog | :edit_draft | own only | — | — | ✓ | — | — |
-| DailyLog | :approve_and_submit | own only | — | — | ✓ | — | — |
-| DailyLog | :read | own only | ✓ | ✓ | ✓ | — | — |
-| DailyLog | :destroy | own+pre-submit | — | — | ✓ | — | — |
-| Photo | :upload | ✓ | ✓ | — | ✓ | — | — |
-| Photo | :apply_caption | — | — | — | — | — | ✓ |
-| Photo | :read | own log only | ✓ | — | ✓ | — | — |
-| Integration | :connect | — | — | — | ✓ | — | — |
-| Integration | :read | — | ✓ | — | ✓ | — | — |
-| IntegrationEvent | :record | — | — | — | — | — | ✓ |
-| IntegrationEvent | :read | — | ✓ | — | ✓ | — | — |
+| Resource          | Action              | foreman        | pm        | owner     | org_admin | platform_admin | no actor |
+| ----------------- | ------------------- | -------------- | --------- | --------- | --------- | -------------- | -------- |
+| Organization      | :register           | —              | —         | —         | —         | ✓              | ✓        |
+| Organization      | :read (own)         | ✓              | ✓         | ✓         | ✓         | ✓              | —        |
+| Organization      | :update             | —              | —         | —         | ✓         | ✓              | —        |
+| User              | :invite             | —              | —         | —         | ✓         | —              | —        |
+| User              | :read               | self only      | ✓         | —         | ✓         | —              | —        |
+| User              | :update_profile     | self only      | self only | self only | ✓         | —              | —        |
+| User              | :update_role        | —              | —         | —         | ✓         | —              | —        |
+| Project           | :create             | —              | ✓         | —         | ✓         | —              | —        |
+| Project           | :read               | member only    | ✓         | ✓         | ✓         | —              | —        |
+| Project           | :update             | —              | ✓         | —         | ✓         | —              | —        |
+| ProjectMembership | :add_member         | —              | ✓         | —         | ✓         | —              | —        |
+| DailyLog          | :submit_recording   | ✓              | ✓         | —         | ✓         | —              | —        |
+| DailyLog          | :apply_transcript   | —              | —         | —         | —         | —              | ✓        |
+| DailyLog          | :apply_structure    | —              | —         | —         | —         | —              | ✓        |
+| DailyLog          | :edit_draft         | own only       | —         | —         | ✓         | —              | —        |
+| DailyLog          | :approve_and_submit | own only       | —         | —         | ✓         | —              | —        |
+| DailyLog          | :read               | own only       | ✓         | ✓         | ✓         | —              | —        |
+| DailyLog          | :destroy            | own+pre-submit | —         | —         | ✓         | —              | —        |
+| Photo             | :upload             | ✓              | ✓         | —         | ✓         | —              | —        |
+| Photo             | :apply_caption      | —              | —         | —         | —         | —              | ✓        |
+| Photo             | :read               | own log only   | ✓         | —         | ✓         | —              | —        |
+| Integration       | :connect            | —              | —         | —         | ✓         | —              | —        |
+| Integration       | :read               | —              | ✓         | —         | ✓         | —              | —        |
+| IntegrationEvent  | :record             | —              | —         | —         | —         | —              | ✓        |
+| IntegrationEvent  | :read               | —              | ✓         | —         | ✓         | —              | —        |
 
 **Legend:**
+
 - ✓ — authorized
 - — — not authorized
 - own only — authorized for records the actor owns
@@ -1583,4 +1588,4 @@ Integrations
 
 ---
 
-*This document is generated from agreed resource designs as of May 2025. All resources are created via `mix ash.gen.resource` and managed through Ash migrations. When adding a new resource, update this document alongside the resource file.*
+_This document is generated from agreed resource designs as of May 2025. All resources are created via `mix ash.gen.resource` and managed through Ash migrations. When adding a new resource, update this document alongside the resource file._
