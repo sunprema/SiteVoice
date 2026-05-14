@@ -24,7 +24,7 @@ Ash supports context strategy — the switch is possible but costly.
 ## Consequences
 
 - organization_id must be present in every Oban job arg
-- organization_id must be set via Ash.set_tenant/1 at every
+- organization_id must be set via Ash.Query.set_tenant/1 at every
   process boundary (HTTP request, Channel message, Oban job)
 - Tigris storage paths must be org-prefixed for logical isolation
 - Forgetting to set tenant = data leakage bug — enforce in code review

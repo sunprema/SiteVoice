@@ -109,6 +109,11 @@ Update this table as slices are completed:
 - Never use `defaults [:read, :create]` alone — define actions explicitly
 - Always put Changes in `lib/site_voice/domain/resources/changes/`
 - Always put Calculations in `lib/site_voice/domain/resources/calculations/`
+- <Ash.Query>
+  You need to **require Ash.Query** is needed to use Ash.Query to enable to use the macro. (
+  Why is it needed?While many Ash.Query functions like Ash.Query.new/1 are standard functions, others (like filter/2) rely on macros to parse Elixir code into data-layer-friendly expressions
+  )
+  </Ash.Query>
 
 ### Multitenancy
 
@@ -135,7 +140,7 @@ Update this table as slices are completed:
 
 ### Oban
 
-- Every worker's `perform/1` calls `Ash.set_tenant(args["organization_id"])` as its first line
+- Every worker's `perform/1` `Ash.Query.set_tenant(args["organization_id"])` as its first line
 - Never perform long-running work synchronously in a Phoenix Channel or controller
 - Always use `max_attempts: 3` minimum
 

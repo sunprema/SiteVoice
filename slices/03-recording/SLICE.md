@@ -34,7 +34,7 @@ org-prefixed Tigris key management, and a scaffold `RecordingChannel` that sets 
 - [ ] `Reporting.Calculations.IsLate` returns `true` if `submitted_at` is after 6 PM on `date`
 - [ ] `Reporting.Calculations.PhotoUrl` returns presigned URL for photo `storage_key`
 - [ ] `SiteVoice.Workers.AudioProcessor` uses `queue: :audio, max_attempts: 3`;
-      `perform/1` calls `Ash.set_tenant(org_id)` as first line, then delegates to Reactor (stubbed for now)
+      `perform/1` calls `Ash.Query.set_tenant(org_id)` as first line, then delegates to Reactor (stubbed for now)
 - [ ] `SiteVoice.Storage` module has `audio_key/4`, `photo_key/4`, `pdf_key/3`,
       `store_audio/2`, `store_photo/2`, `fetch/2`, `presigned_url/3` functions
 - [ ] `Organization` gains `has_many :daily_logs, SiteVoice.Reporting.DailyLog` (if not already from domain model)
@@ -114,5 +114,6 @@ For MVP, comparing against UTC 18:00 is acceptable.
 ### ReportCount and LastReportDate (now real implementations)
 
 These were stubbed in Slice 02. Now that DailyLog exists, implement them:
+
 - `ReportCount`: count DailyLogs where `project_id == record.id and status == :submitted`
 - `LastReportDate`: return max `date` from DailyLogs where `project_id == record.id and status == :submitted`

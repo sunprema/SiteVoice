@@ -9,7 +9,7 @@ Work through in order. Check off each task as it is completed.
 File: `lib/sitevoice/reporting/steps/set_tenant.ex`
 
 - [x] `use Reactor.Step`
-- [x] `run/3` matches `%{organization_id: org_id}`, calls `Ash.set_tenant(org_id)`, returns `{:ok, org_id}`
+- [x] `run/3` matches `%{organization_id: org_id}`, calls `Ash.Query.set_tenant(org_id)`, returns `{:ok, org_id}`
 - [x] `compensate/4` returns `:ok`
 
 ## 2. Create FetchLog Step
@@ -134,7 +134,7 @@ File: `lib/sitevoice/reporting/reactors/process_recording.ex`
 
 File: `lib/sitevoice/workers/audio_processor.ex`
 
-- [x] `perform/1` first line: `Ash.set_tenant(org_id)` (not just assigned to `_tenant`)
+- [x] `perform/1` first line: `Ash.Query.set_tenant(org_id)` (not just assigned to `_tenant`)
 - [x] Calls `Sitevoice.Reporting.Reactors.ProcessRecording.run(%{log_id: log_id, organization_id: org_id})`
 - [x] On `{:ok, _}` returns `:ok`
 - [x] On `{:error, reason}` calls `DailyLog.:mark_failed` action via Ash, then returns `{:error, reason}`
@@ -160,18 +160,22 @@ File: `lib/sitevoice/reporting/photo.ex`
 All tests tagged `@moduletag slice: :ai_pipeline`. Use `Req.Test` stubs — never real endpoints.
 
 File: `test/sitevoice/reporting/reactors/process_recording_test.exs`
+
 - [x] Integration test: stubs Whisper and Claude APIs, runs full Reactor, asserts DailyLog status becomes `:draft`
 - [x] Integration test: Whisper API returns error, asserts DailyLog status becomes `:failed`
 
 File: `test/sitevoice/reporting/steps/transcribe_whisper_test.exs`
+
 - [x] Happy path: stub returns `%{status: 200, body: %{"text" => "transcript"}}`, assert `{:ok, "transcript"}`
 - [x] Error path: stub returns `%{status: 500}`, assert `{:error, _}`
 
 File: `test/sitevoice/reporting/steps/structure_with_claude_test.exs`
+
 - [x] Happy path: stub returns valid JSON response, assert `{:ok, %{labor: _, accuracy_score: _}}`
 - [x] Error path: stub returns non-JSON body, assert `{:error, _}`
 
 File: `test/sitevoice/reporting/steps/caption_photos_test.exs`
+
 - [x] Happy path: stub returns a caption, assert photo record updated with caption and category
 
 ## 15. Verify

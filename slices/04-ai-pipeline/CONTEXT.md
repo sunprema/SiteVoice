@@ -30,9 +30,11 @@ These files already exist and will be modified:
 ## New Files To Create
 
 ### Reactor
+
 - `lib/sitevoice/reporting/reactors/process_recording.ex`
 
 ### Reactor Steps
+
 - `lib/sitevoice/reporting/steps/set_tenant.ex`
 - `lib/sitevoice/reporting/steps/fetch_log.ex`
 - `lib/sitevoice/reporting/steps/fetch_from_tigris.ex`
@@ -44,6 +46,7 @@ These files already exist and will be modified:
 - `lib/sitevoice/reporting/steps/store_tigris.ex`
 
 ### Tests
+
 - `test/sitevoice/reporting/reactors/process_recording_test.exs`
 - `test/sitevoice/reporting/steps/transcribe_whisper_test.exs`
 - `test/sitevoice/reporting/steps/structure_with_claude_test.exs`
@@ -54,7 +57,7 @@ These files already exist and will be modified:
 - Module names use `Sitevoice` (lowercase v) — the project uses this convention, not `SiteVoice`
 - Every Reactor step file goes in `lib/sitevoice/reporting/steps/`
 - `SetTenant` step must always `wait_for` before any Ash steps run — `FetchLog` has `wait_for :set_tenant`
-- `AudioProcessor.perform/1` must call `Ash.set_tenant(org_id)` as its very first line
+- `AudioProcessor.perform/1` must call `Ash.Query.set_tenant(org_id)` as its very first line
 - External API steps (`TranscribeWhisper`, `StructureWithClaude`, `CaptionPhotos`) must have timeouts
 - Steps that mutate state must implement `compensate/4` — `SaveTranscript`, `SaveStructure` compensate by resetting status
 - `async?: true` only on steps with no dependency on other concurrent steps — `StructureWithClaude` and `CaptionPhotos` can run concurrently after transcription

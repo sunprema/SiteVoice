@@ -58,7 +58,7 @@ These files already exist and will be modified:
 - `foreman_id` is set from `actor(:id)` in `:submit_recording`, never from params
 - `EnqueueProcessing` must use `Ash.Changeset.after_action/2` so the Oban job is only inserted after the DailyLog row is committed; job args MUST include `organization_id`
 - `DispatchIntegrations` is wired to `:approve_and_submit` but that action is deferred to Slice 04 AI pipeline. Define the Change module now but it can be a stub that returns `{:ok, log}` with a TODO comment
-- `AudioProcessor` worker's `perform/1` must call `Ash.set_tenant(org_id)` as its very first line before any Ash operations
+- `AudioProcessor` worker's `perform/1` must call `Ash.Query.set_tenant(org_id)` as its very first line before any Ash operations
 - All Tigris storage keys must be org-prefixed: `{organization_id}/{project_id}/{date}/{log_id}.m4a`
 - `RecordingChannel`: set tenant on `join` and re-apply on every `handle_in`
 - `RecordingChannel`: authorize that the joining user owns the log (prevent cross-user channel access)
