@@ -10,6 +10,12 @@ config :sitevoice, token_signing_secret: "UDzkXu25F6YwWTGPjdAfdSq2BDLW4QFz"
 config :bcrypt_elixir, log_rounds: 1
 config :ash, policies: [show_policy_breakdowns?: true], disable_async?: true
 
+config :sitevoice, :openai_req_options, plug: {Req.Test, :whisper_req}
+config :sitevoice, :anthropic_req_options, plug: {Req.Test, :claude_req}
+
+config :sitevoice, :openai_api_key, "test_openai_key"
+config :sitevoice, :anthropic_api_key, "test_anthropic_key"
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used

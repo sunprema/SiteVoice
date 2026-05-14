@@ -1,6 +1,5 @@
-defmodule Sitevoice.Workers.AudioProcessorTest do
+defmodule Sitevoice.Reporting.Reactors.ProcessRecordingTest do
   use Sitevoice.DataCase, async: false
-  use Oban.Testing, repo: Sitevoice.Repo
 
   @moduletag slice: :ai_pipeline
 
@@ -8,16 +7,15 @@ defmodule Sitevoice.Workers.AudioProcessorTest do
   alias Sitevoice.Accounts.User
   alias Sitevoice.Projects.Project
   alias Sitevoice.Reporting.DailyLog
-  alias Sitevoice.Workers.AudioProcessor
 
   @valid_structure %{
-    "labor" => [],
+    "labor" => [%{"crew" => "Martinez", "headcount" => 6}],
     "progress" => [],
     "equipment" => [],
     "materials" => [],
     "delays" => [],
     "safety" => [],
-    "accuracy_score" => 0.75
+    "accuracy_score" => 0.88
   }
 
   defp setup_org do
@@ -83,15 +81,15 @@ defmodule Sitevoice.Workers.AudioProcessorTest do
     log
   end
 
-  describe "perform/1" do
-    test "returns :ok and sets DailyLog status to :draft on success" do
+  describe "ProcessRecording reactor" do
+    test "full pipeline: DailyLog status becomes :draft on success" do
       %{organization: org, user: admin} = setup_org()
       foreman = create_foreman(org, admin)
       project = create_project(org, admin)
       log = create_log(org, foreman, project)
 
       Req.Test.stub(:whisper_req, fn conn ->
-        Req.Test.json(conn, %{"text" => "Poured footing on south wall."})
+        Req.Test.json(conn, %{"text" => "Six rebar workers completed the south footing pour."})
       end)
 
       Req.Test.stub(:claude_req, fn conn ->
@@ -100,14 +98,19 @@ defmodule Sitevoice.Workers.AudioProcessorTest do
         })
       end)
 
-      job = %Oban.Job{args: %{"log_id" => log.id, "organization_id" => to_string(org.id)}}
-      assert :ok = AudioProcessor.perform(job)
+      assert {:ok, _} =
+               Reactor.run(
+                 Sitevoice.Reporting.Reactors.ProcessRecording,
+                 %{log_id: log.id, organization_id: to_string(org.id)}
+               )
 
-      {:ok, updated} = Ash.get(DailyLog, log.id, authorize?: false, tenant: to_string(org.id))
-      assert updated.status == :draft
+      {:ok, updated_log} = Ash.get(DailyLog, log.id, authorize?: false, tenant: to_string(org.id))
+      assert updated_log.status == :draft
+      assert updated_log.transcript == "Six rebar workers completed the south footing pour."
+      assert updated_log.accuracy_score == 0.88
     end
 
-    test "returns error and sets DailyLog status to :failed when pipeline fails" do
+    test "pipeline fails when Whisper returns error: DailyLog status becomes :failed" do
       %{organization: org, user: admin} = setup_org()
       foreman = create_foreman(org, admin)
       project = create_project(org, admin)
@@ -115,15 +118,18 @@ defmodule Sitevoice.Workers.AudioProcessorTest do
 
       Req.Test.stub(:whisper_req, fn conn ->
         conn
-        |> Plug.Conn.put_status(500)
-        |> Req.Test.json(%{"error" => "server error"})
+        |> Plug.Conn.put_status(503)
+        |> Req.Test.json(%{"error" => "service unavailable"})
       end)
 
-      job = %Oban.Job{args: %{"log_id" => log.id, "organization_id" => to_string(org.id)}}
-      assert {:error, _} = AudioProcessor.perform(job)
+      assert {:error, _} =
+               Reactor.run(
+                 Sitevoice.Reporting.Reactors.ProcessRecording,
+                 %{log_id: log.id, organization_id: to_string(org.id)}
+               )
 
-      {:ok, updated} = Ash.get(DailyLog, log.id, authorize?: false, tenant: to_string(org.id))
-      assert updated.status == :failed
+      {:ok, log_after} = Ash.get(DailyLog, log.id, authorize?: false, tenant: to_string(org.id))
+      assert log_after.status == :pending
     end
   end
 end

@@ -103,6 +103,16 @@ defmodule Sitevoice.Reporting.DailyLog do
       change set_attribute(:status, :failed)
     end
 
+    update :undo_apply_transcript do
+      argument :changeset, :term, allow_nil?: true
+      change set_attribute(:status, :pending)
+    end
+
+    update :undo_apply_structure do
+      argument :changeset, :term, allow_nil?: true
+      change set_attribute(:status, :processing)
+    end
+
     update :edit_draft do
       accept [:labor, :progress, :equipment, :materials, :delays, :safety, :weather, :pdf_key]
     end
@@ -144,7 +154,7 @@ defmodule Sitevoice.Reporting.DailyLog do
       authorize_if actor_attribute_equals(:role, :pm)
     end
 
-    policy action([:apply_transcript, :apply_structure, :mark_failed]) do
+    policy action([:apply_transcript, :apply_structure, :mark_failed, :undo_apply_transcript, :undo_apply_structure]) do
       authorize_if actor_absent()
       authorize_if actor_attribute_equals(:role, :org_admin)
     end

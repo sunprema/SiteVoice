@@ -19,6 +19,7 @@ Each slice in `slices/NN-name/` contains three files:
 
 ### Session Start Protocol
 
+**USER IS AN EXPERT SOFTWARE DEVELOPER. If you are stuck anywhere, you should stop and ask for clarification**
 Every session:
 
 1. Ask which slice to work on (if not told)
@@ -89,7 +90,7 @@ Update this table as slices are completed:
 | 01    | Auth           | ✅ Complete    |
 | 02    | Projects       | ✅ Complete    |
 | 03    | Recording      | ✅ Complete    |
-| 04    | AI Pipeline    | ⬜ Not started |
+| 04    | AI Pipeline    | ✅ Complete    |
 | 05    | PDF Generation | ⬜ Not started |
 | 06    | Real-time      | ⬜ Not started |
 | 07    | Notifications  | ⬜ Not started |

@@ -42,6 +42,16 @@ defmodule Sitevoice.Storage do
     end
   end
 
+  @spec fetch(key :: String.t()) :: {:ok, binary()} | {:error, term()}
+  def fetch(key) when is_binary(key) do
+    cond do
+      String.ends_with?(key, ".m4a") -> fetch(@audio_bucket, key)
+      String.ends_with?(key, ".jpg") -> fetch(@photo_bucket, key)
+      String.ends_with?(key, ".pdf") -> fetch(@pdf_bucket, key)
+      true -> {:error, "Cannot determine bucket for key: #{key}"}
+    end
+  end
+
   @spec fetch(bucket :: String.t(), key :: String.t()) ::
           {:ok, binary()} | {:error, term()}
   def fetch(bucket, key) do
