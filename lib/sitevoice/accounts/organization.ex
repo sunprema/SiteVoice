@@ -32,6 +32,7 @@ defmodule Sitevoice.Accounts.Organization do
 
   relationships do
     has_many :users, Sitevoice.Accounts.User
+    has_many :projects, Sitevoice.Projects.Project
   end
 
   actions do

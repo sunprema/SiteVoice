@@ -93,7 +93,7 @@ config :spark,
 config :sitevoice,
   ecto_repos: [Sitevoice.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [Sitevoice.Accounts]
+  ash_domains: [Sitevoice.Accounts, Sitevoice.Projects]
 
 # Configure the endpoint
 config :sitevoice, SitevoiceWeb.Endpoint,

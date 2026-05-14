@@ -122,6 +122,8 @@ defmodule Sitevoice.Accounts.User do
     has_many :valid_api_keys, Sitevoice.Accounts.ApiKey do
       filter expr(valid)
     end
+
+    has_many :project_memberships, Sitevoice.Projects.ProjectMembership
   end
 
   actions do
