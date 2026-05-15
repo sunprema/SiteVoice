@@ -60,7 +60,7 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <body class="app-ui">
+    <div class="app-ui">
       <.nav current_user={@current_user} current_path="/logs" />
       <div class="app-page blueprint-bg" style="padding: 40px;">
         <div style="max-width: 560px; margin: 0 auto; text-align: center;">
@@ -132,7 +132,7 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
           <% end %>
         </div>
       </div>
-    </body>
+    </div>
     """
   end
 

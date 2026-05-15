@@ -138,7 +138,7 @@ defmodule SitevoiceWeb.Logs.NewLive do
       |> assign(:photo_entries, assigns.uploads.photos.entries)
 
     ~H"""
-    <body class="app-ui">
+    <div class="app-ui">
       <.nav current_user={@current_user} current_path="/projects" />
       <div class="app-page" style="padding: 40px; max-width: 700px; margin: 0 auto;">
         <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
@@ -220,7 +220,7 @@ defmodule SitevoiceWeb.Logs.NewLive do
           </button>
         </form>
       </div>
-    </body>
+    </div>
     """
   end
 

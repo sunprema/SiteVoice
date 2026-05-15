@@ -90,7 +90,7 @@ defmodule SitevoiceWeb.DashboardLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <body class="app-ui">
+    <div class="app-ui">
       <.nav current_user={@current_user} current_path="/dashboard" />
       <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
         <%= if @view == :foreman do %>
@@ -99,7 +99,7 @@ defmodule SitevoiceWeb.DashboardLive do
           <.pm_view {assigns} />
         <% end %>
       </div>
-    </body>
+    </div>
     """
   end
 

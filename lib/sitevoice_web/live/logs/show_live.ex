@@ -71,7 +71,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
     assigns = assign(assigns, :categories, @categories)
 
     ~H"""
-    <body class="app-ui">
+    <div class="app-ui">
       <.nav current_user={@current_user} current_path="/logs" />
       <div class="app-page" style="padding: 40px; max-width: 860px; margin: 0 auto;">
 
@@ -164,7 +164,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
           <% end %>
         </div>
       </div>
-    </body>
+    </div>
     """
   end
 

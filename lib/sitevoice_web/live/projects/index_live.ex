@@ -58,7 +58,7 @@ defmodule SitevoiceWeb.Projects.IndexLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <body class="app-ui">
+    <div class="app-ui">
       <.nav current_user={@current_user} current_path="/projects" />
       <div class="app-page" style="padding: 40px; max-width: 1000px; margin: 0 auto;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
@@ -129,7 +129,7 @@ defmodule SitevoiceWeb.Projects.IndexLive do
           </div>
         <% end %>
       </div>
-    </body>
+    </div>
     """
   end
 

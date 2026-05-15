@@ -104,7 +104,7 @@ defmodule SitevoiceWeb.Projects.ShowLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <body class="app-ui">
+    <div class="app-ui">
       <.nav current_user={@current_user} current_path="/projects" />
       <div class="app-page" style="padding: 40px; max-width: 1000px; margin: 0 auto;">
         <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
@@ -214,7 +214,7 @@ defmodule SitevoiceWeb.Projects.ShowLive do
           </div>
         </div>
       </div>
-    </body>
+    </div>
     """
   end
 
