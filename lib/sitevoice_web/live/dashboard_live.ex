@@ -2,6 +2,7 @@ defmodule SitevoiceWeb.DashboardLive do
   use SitevoiceWeb, :live_view
 
   require Ash.Query
+  require Logger
 
   import SitevoiceWeb.NavComponent
 
@@ -39,7 +40,9 @@ defmodule SitevoiceWeb.DashboardLive do
       )
       |> case do
         {:ok, log} -> log
-        _ -> nil
+        {:error, reason} ->
+          Logger.error("DashboardLive failed to load today's log for foreman=#{user.id}: #{inspect(reason)}")
+          nil
       end
 
     recent_logs =
@@ -55,7 +58,9 @@ defmodule SitevoiceWeb.DashboardLive do
       )
       |> case do
         {:ok, logs} -> logs
-        _ -> []
+        {:error, reason} ->
+          Logger.error("DashboardLive failed to load recent logs for foreman=#{user.id}: #{inspect(reason)}")
+          []
       end
 
     assign(socket,
@@ -75,7 +80,9 @@ defmodule SitevoiceWeb.DashboardLive do
       |> Ash.read(tenant: org_id, actor: user, authorize?: true)
       |> case do
         {:ok, logs} -> logs
-        _ -> []
+        {:error, reason} ->
+          Logger.error("DashboardLive failed to load PM logs for org=#{org_id}: #{inspect(reason)}")
+          []
       end
 
     counts = Enum.frequencies_by(all_logs, & &1.status)

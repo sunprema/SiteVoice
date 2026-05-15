@@ -5,7 +5,7 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
 
   on_mount {SitevoiceWeb.LiveUserAuth, :live_user_required}
 
-  @pipeline_steps ~w(transcribed structured pdf_generated)
+  @pipeline_steps ~w(transcribed structured photos pdf_generated)
 
   @impl true
   def mount(%{"id" => log_id}, _session, socket) do

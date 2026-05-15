@@ -67,6 +67,7 @@ defmodule Sitevoice.Reporting.Photo do
     policy action(:upload) do
       authorize_if actor_attribute_equals(:role, :foreman)
       authorize_if actor_attribute_equals(:role, :pm)
+      authorize_if actor_attribute_equals(:role, :org_admin)
     end
 
     policy action(:apply_caption) do

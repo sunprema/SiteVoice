@@ -5,7 +5,9 @@ defmodule Sitevoice.Steps.GeneratePdf do
 
   @imprintor Application.compile_env(:sitevoice, :imprintor_mod, Imprintor)
 
-  def run(%{log: log}, _, _) do
+  def run(%{log: log, organization_id: org_id}, _, _) do
+    log = Ash.load!(log, [:photos], tenant: org_id, authorize?: false)
+
     Logger.info("GeneratePdf starting",
       log_id: log.id,
       project: log.project.name,

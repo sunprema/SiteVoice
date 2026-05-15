@@ -50,6 +50,13 @@ defmodule Sitevoice.Reporting.Reactors.ProcessRecording do
     async? true
   end
 
+  step :broadcast_photos_captioned, Sitevoice.Steps.BroadcastPipelineStep do
+    argument :step, value("photos")
+    argument :log_id, input(:log_id)
+    argument :organization_id, input(:organization_id)
+    wait_for :caption_photos
+  end
+
   update :save_structure, Sitevoice.Reporting.DailyLog, :apply_structure do
     initial result(:save_transcript)
     tenant input(:organization_id)
@@ -75,6 +82,8 @@ defmodule Sitevoice.Reporting.Reactors.ProcessRecording do
 
   step :generate_pdf, Sitevoice.Steps.GeneratePdf do
     argument :log, result(:save_structure)
+    argument :organization_id, input(:organization_id)
+    wait_for :caption_photos
   end
 
   step :broadcast_pdf_generated, Sitevoice.Steps.BroadcastPipelineStep do

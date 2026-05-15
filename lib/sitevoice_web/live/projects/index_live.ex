@@ -2,6 +2,7 @@ defmodule SitevoiceWeb.Projects.IndexLive do
   use SitevoiceWeb, :live_view
 
   require Ash.Query
+  require Logger
 
   import SitevoiceWeb.NavComponent
 
@@ -144,7 +145,9 @@ defmodule SitevoiceWeb.Projects.IndexLive do
     )
     |> case do
       {:ok, projects} -> projects
-      _ -> []
+      {:error, reason} ->
+        Logger.error("ProjectsIndexLive failed to load projects for org=#{org_id}: #{inspect(reason)}")
+        []
     end
   end
 

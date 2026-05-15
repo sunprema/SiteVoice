@@ -205,11 +205,64 @@ defmodule SitevoiceWeb.Logs.ShowLive do
     """
   end
 
+  # labor: {crew, headcount, trade, hours, subcontractor}
+  defp entry_text(%{"trade" => trade, "headcount" => headcount, "hours" => hours} = entry) do
+    crew = Map.get(entry, "crew")
+    sub = Map.get(entry, "subcontractor")
+
+    [
+      "#{headcount} #{trade}",
+      crew && "(#{crew})",
+      "#{hours} hrs",
+      sub && "via #{sub}"
+    ]
+    |> Enum.filter(& &1)
+    |> Enum.join(" · ")
+  end
+
+  # materials: {item, quantity, received_at, note}
+  defp entry_text(%{"item" => item, "quantity" => qty} = entry) do
+    note = Map.get(entry, "note")
+    received = Map.get(entry, "received_at")
+
+    [item, "qty: #{qty}", received && "received #{received}", note]
+    |> Enum.filter(& &1)
+    |> Enum.join(" · ")
+  end
+
+  # equipment: {item, status, note}
+  defp entry_text(%{"item" => item, "status" => status} = entry) do
+    note = Map.get(entry, "note")
+    if note, do: "#{item} — #{status} (#{note})", else: "#{item} — #{status}"
+  end
+
+  # safety: {description, incident_type}
+  defp entry_text(%{"description" => desc, "incident_type" => type}) do
+    "#{type}: #{desc}"
+  end
+
+  # delays: {description, cause, impact, hours_lost}
+  defp entry_text(%{"description" => desc, "cause" => cause} = entry) do
+    hours_lost = Map.get(entry, "hours_lost")
+    impact = Map.get(entry, "impact")
+
+    [desc, "cause: #{cause}", hours_lost && "#{hours_lost} hrs lost", impact]
+    |> Enum.filter(& &1)
+    |> Enum.join(" · ")
+  end
+
+  # progress: {description, location, percentage_complete}
+  defp entry_text(%{"description" => desc} = entry) do
+    loc = Map.get(entry, "location")
+    pct = Map.get(entry, "percentage_complete")
+
+    [desc, loc, pct && "#{pct}% complete"]
+    |> Enum.filter(& &1)
+    |> Enum.join(" — ")
+  end
+
   defp entry_text(entry) when is_map(entry) do
-    Map.get(entry, "description") ||
-      Map.get(entry, "note") ||
-      Map.get(entry, "text") ||
-      inspect(entry)
+    Map.get(entry, "note") || Map.get(entry, "text") || inspect(entry)
   end
 
   defp entry_text(entry) when is_binary(entry), do: entry

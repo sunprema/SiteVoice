@@ -75,7 +75,7 @@ defmodule SitevoiceWeb.Logs.NewLive do
                  authorize?: true
                ) do
             {:ok, log} ->
-              consume_photos(socket, org_id, project.id, log.id)
+              consume_photos(socket, user, org_id, project.id, log.id)
               {:noreply, push_navigate(socket, to: ~p"/logs/#{log.id}/processing")}
 
             {:error, error} ->
@@ -111,16 +111,28 @@ defmodule SitevoiceWeb.Logs.NewLive do
     end
   end
 
-  defp consume_photos(socket, org_id, project_id, log_id) do
+  defp consume_photos(socket, user, org_id, project_id, log_id) do
+    require Logger
+
     consume_uploaded_entries(socket, :photos, fn %{path: path}, entry ->
       key = "#{org_id}/photos/#{project_id}/#{log_id}/#{Ash.UUID.generate()}-#{entry.client_name}"
 
-      case File.read(path) do
-        {:ok, binary} ->
-          Sitevoice.Storage.store_photo(key, binary)
-          {:ok, key}
-
-        {:error, _} ->
+      with {:ok, binary} <- File.read(path),
+           {:ok, _} <- Sitevoice.Storage.store_photo(key, binary),
+           {:ok, _} <-
+             Ash.create(
+               Sitevoice.Reporting.Photo,
+               %{storage_key: key},
+               action: :upload,
+               arguments: %{daily_log_id: log_id},
+               tenant: org_id,
+               actor: user,
+               authorize?: true
+             ) do
+        {:ok, key}
+      else
+        {:error, reason} ->
+          Logger.error("Photo upload failed for #{entry.client_name}: #{inspect(reason)}")
           {:ok, nil}
       end
     end)
@@ -193,7 +205,8 @@ defmodule SitevoiceWeb.Logs.NewLive do
             <div class="section-label">Site Photos <span style="font-size: 10px; opacity: 0.5; font-family: var(--font-mono);">(optional, up to 10)</span></div>
             <div class="photo-strip" style="margin-bottom: 12px;">
               <%= for entry <- @photo_entries do %>
-                <div class="photo-slot filled">
+                <div class="photo-slot filled" style="overflow: hidden;">
+                  <.live_img_preview entry={entry} style="width: 100%; height: 100%; object-fit: cover;" />
                   <div style="position: absolute; bottom: 2px; right: 4px; font-family: var(--font-mono); font-size: 9px; color: var(--orange);">
                     <%= trunc(entry.progress) %>%
                   </div>
