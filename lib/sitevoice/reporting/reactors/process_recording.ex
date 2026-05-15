@@ -31,6 +31,13 @@ defmodule Sitevoice.Reporting.Reactors.ProcessRecording do
     undo_action :undo_apply_transcript
   end
 
+  step :broadcast_transcribed, Sitevoice.Steps.BroadcastPipelineStep do
+    argument :step, value("transcribed")
+    argument :log_id, input(:log_id)
+    argument :organization_id, input(:organization_id)
+    wait_for :save_transcript
+  end
+
   step :structure, Sitevoice.Steps.StructureWithClaude do
     argument :transcript, result(:transcribe)
     async? true
@@ -59,8 +66,22 @@ defmodule Sitevoice.Reporting.Reactors.ProcessRecording do
     undo_action :undo_apply_structure
   end
 
+  step :broadcast_structured, Sitevoice.Steps.BroadcastPipelineStep do
+    argument :step, value("structured")
+    argument :log_id, input(:log_id)
+    argument :organization_id, input(:organization_id)
+    wait_for :save_structure
+  end
+
   step :generate_pdf, Sitevoice.Steps.GeneratePdf do
     argument :log, result(:save_structure)
+  end
+
+  step :broadcast_pdf_generated, Sitevoice.Steps.BroadcastPipelineStep do
+    argument :step, value("pdf_generated")
+    argument :log_id, input(:log_id)
+    argument :organization_id, input(:organization_id)
+    wait_for :generate_pdf
   end
 
   step :store_pdf, Sitevoice.Steps.StoreTigris do

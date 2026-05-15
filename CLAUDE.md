@@ -92,7 +92,7 @@ Update this table as slices are completed:
 | 03    | Recording      | ✅ Complete    |
 | 04    | AI Pipeline    | ✅ Complete    |
 | 05    | PDF Generation | ✅ Complete    |
-| 06    | Real-time      | ⬜ Not started |
+| 06    | Real-time      | ✅ Complete    |
 | 07    | Notifications  | ⬜ Not started |
 | 08    | Integrations   | ⬜ Not started |
 | 09    | Mobile         | ⬜ Not started |

@@ -8,6 +8,8 @@ defmodule SitevoiceWeb.RecordingChannel do
     org_id = socket.assigns.current_user.organization_id
 
     if authorized?(socket, log_id) do
+      topic = "org:#{org_id}:log:#{log_id}"
+      Phoenix.PubSub.subscribe(Sitevoice.PubSub, topic)
       {:ok, assign(socket, log_id: log_id, organization_id: org_id)}
     else
       {:error, %{reason: "unauthorized"}}
@@ -23,6 +25,22 @@ defmodule SitevoiceWeb.RecordingChannel do
     |> Oban.insert()
 
     push(socket, "processing_started", %{})
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:report_ready, payload}, socket) do
+    push(socket, "report_ready", payload)
+    {:noreply, socket}
+  end
+
+  def handle_info({:pipeline_update, payload}, socket) do
+    push(socket, "pipeline_update", payload)
+    {:noreply, socket}
+  end
+
+  def handle_info({:pipeline_failed, payload}, socket) do
+    push(socket, "pipeline_failed", payload)
     {:noreply, socket}
   end
 

@@ -2,21 +2,16 @@ defmodule SitevoiceWeb.UserSocket do
   use Phoenix.Socket
 
   channel "recording:*", SitevoiceWeb.RecordingChannel
+  channel "log:*", SitevoiceWeb.LogChannel
 
   @impl true
   def connect(%{"token" => token}, socket, _connect_info) do
-    case AshAuthentication.Jwt.verify(token, :sitevoice) do
-      {:ok, claims, resource} ->
-        case AshAuthentication.subject_to_user(claims["sub"], resource) do
-          {:ok, user} ->
-            {:ok, assign(socket, :current_user, user)}
-
-          {:error, _} ->
-            :error
-        end
-
-      :error ->
-        :error
+    with {:ok, %{"tenant" => tenant}} <- AshAuthentication.Jwt.peek(token),
+         {:ok, claims, resource} <- AshAuthentication.Jwt.verify(token, :sitevoice, tenant: tenant),
+         {:ok, user} <- AshAuthentication.subject_to_user(claims["sub"], resource) do
+      {:ok, assign(socket, :current_user, user)}
+    else
+      _ -> :error
     end
   end
 
