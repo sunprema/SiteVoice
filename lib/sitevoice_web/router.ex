@@ -66,7 +66,7 @@ defmodule SitevoiceWeb.Router do
     get "/register", RegistrationController, :new
     post "/register", RegistrationController, :create
     auth_routes AuthController, Sitevoice.Accounts.User, path: "/auth"
-    sign_out_route AuthController
+    sign_out_route AuthController, "/sign-out", live_view: SitevoiceWeb.SignOutLive
 
     # Remove these if you'd like to use your own authentication views
     sign_in_route register_path: "/register",

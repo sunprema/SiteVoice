@@ -1,114 +1,119 @@
-<div class="min-h-screen flex items-center justify-center bg-base-200 py-12 px-4">
-  <div class="card w-full max-w-md bg-base-100 shadow-xl">
-    <div class="card-body">
-      <h1 class="card-title text-2xl font-bold mb-1">Create your account</h1>
-      <p class="text-sm text-base-content/60 mb-6">
-        Set up your organization and get started with SiteVoice.
-      </p>
+<div class="auth-page">
+  <div class="auth-page-glow"></div>
 
-      <%= if @errors != [] do %>
-        <div class="alert alert-error mb-4">
-          <ul class="list-disc list-inside space-y-1">
-            <%= for error <- @errors do %>
-              <li class="text-sm"><%= error %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+  <%!-- Logo --%>
+  <a href="/" class="auth-logo-standalone">
+    Site<span>Voice</span>&nbsp;AI
+  </a>
 
-      <form method="post" action={~p"/register"} phx-feedback-for="registration">
-        <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
+  <%!-- Card --%>
+  <div class="auth-card">
 
-        <div class="form-control mb-4">
-          <label class="label" for="registration_org_name">
-            <span class="label-text font-medium">Company / Organization Name</span>
-          </label>
-          <input
-            id="registration_org_name"
-            type="text"
-            name="registration[org_name]"
-            value={Map.get(@params, "org_name", "")}
-            placeholder="Acme Construction"
-            class="input input-bordered w-full"
-            required
-            autocomplete="organization"
-          />
-        </div>
+    <%!-- Heading --%>
+    <div class="auth-form-heading">CREATE ACCOUNT</div>
+    <p class="auth-tagline">Set up your organization and start reporting in minutes.</p>
 
-        <div class="form-control mb-4">
-          <label class="label" for="registration_name">
-            <span class="label-text font-medium">Your Full Name</span>
-          </label>
-          <input
-            id="registration_name"
-            type="text"
-            name="registration[name]"
-            value={Map.get(@params, "name", "")}
-            placeholder="Jane Smith"
-            class="input input-bordered w-full"
-            required
-            autocomplete="name"
-          />
-        </div>
+    <%!-- Error banner --%>
+    <%= if @errors != [] do %>
+      <div class="auth-alert-error" style="margin-bottom: 20px;">
+        <ul class="auth-error-list">
+          <%= for error <- @errors do %>
+            <li class="auth-error-item"><%= error %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
 
-        <div class="form-control mb-4">
-          <label class="label" for="registration_email">
-            <span class="label-text font-medium">Work Email</span>
-          </label>
-          <input
-            id="registration_email"
-            type="email"
-            name="registration[email]"
-            value={Map.get(@params, "email", "")}
-            placeholder="jane@acme.com"
-            class="input input-bordered w-full"
-            required
-            autocomplete="email"
-          />
-        </div>
+    <form method="post" action={~p"/register"} class="auth-form">
+      <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
 
-        <div class="form-control mb-4">
-          <label class="label" for="registration_password">
-            <span class="label-text font-medium">Password</span>
-          </label>
-          <input
-            id="registration_password"
-            type="password"
-            name="registration[password]"
-            placeholder="At least 8 characters"
-            class="input input-bordered w-full"
-            required
-            minlength="8"
-            autocomplete="new-password"
-          />
-        </div>
+      <div class="auth-field">
+        <label class="auth-label" for="registration_org_name">Company / Organization</label>
+        <input
+          id="registration_org_name"
+          type="text"
+          name="registration[org_name]"
+          value={Map.get(@params, "org_name", "")}
+          placeholder="Acme Construction"
+          class="auth-input"
+          required
+          autocomplete="organization"
+        />
+      </div>
 
-        <div class="form-control mb-6">
-          <label class="label" for="registration_password_confirmation">
-            <span class="label-text font-medium">Confirm Password</span>
-          </label>
-          <input
-            id="registration_password_confirmation"
-            type="password"
-            name="registration[password_confirmation]"
-            placeholder="Repeat your password"
-            class="input input-bordered w-full"
-            required
-            autocomplete="new-password"
-          />
-        </div>
+      <div class="auth-field">
+        <label class="auth-label" for="registration_name">Your Full Name</label>
+        <input
+          id="registration_name"
+          type="text"
+          name="registration[name]"
+          value={Map.get(@params, "name", "")}
+          placeholder="Jane Smith"
+          class="auth-input"
+          required
+          autocomplete="name"
+        />
+      </div>
 
-        <button type="submit" class="btn btn-primary w-full">
-          Create Account
-        </button>
-      </form>
+      <div class="auth-field">
+        <label class="auth-label" for="registration_email">Work Email</label>
+        <input
+          id="registration_email"
+          type="email"
+          name="registration[email]"
+          value={Map.get(@params, "email", "")}
+          placeholder="jane@acme.com"
+          class="auth-input"
+          required
+          autocomplete="email"
+        />
+      </div>
 
-      <div class="divider my-4"></div>
+      <div class="auth-field">
+        <label class="auth-label" for="registration_password">Password</label>
+        <input
+          id="registration_password"
+          type="password"
+          name="registration[password]"
+          placeholder="At least 8 characters"
+          class="auth-input"
+          required
+          minlength="8"
+          autocomplete="new-password"
+        />
+      </div>
 
-      <p class="text-sm text-center text-base-content/60">
-        Already have an account?
-        <a href={~p"/sign-in"} class="link link-primary">Sign in</a>
-      </p>
+      <div class="auth-field">
+        <label class="auth-label" for="registration_password_confirmation">Confirm Password</label>
+        <input
+          id="registration_password_confirmation"
+          type="password"
+          name="registration[password_confirmation]"
+          placeholder="Repeat your password"
+          class="auth-input"
+          required
+          autocomplete="new-password"
+        />
+      </div>
+
+      <button type="submit" class="auth-submit">Create Account</button>
+    </form>
+
+    <div class="auth-divider" style="margin-top: 28px;">
+      <div class="auth-divider-line"></div>
+      <div class="auth-divider-text-wrap">
+        <span class="auth-divider-text">or</span>
+      </div>
+      <div class="auth-divider-line"></div>
     </div>
+
+    <p style="text-align: center; margin-top: 16px;">
+      <a href={~p"/sign-in"} class="auth-toggler" style="opacity: 0.7; font-size: 13px;">
+        Already have an account? <strong style="color: var(--orange); font-weight: 600;">Sign In →</strong>
+      </a>
+    </p>
   </div>
+
+  <%!-- Footer --%>
+  <div class="sign-out-footer">SITEVOICE AI · BUILT FOR THE FIELD</div>
 </div>

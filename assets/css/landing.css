@@ -57,7 +57,7 @@ nav {
 .nav-cta:hover { background: var(--orange-hot) !important; color: #fff !important; }
 
 /* ─── HERO ─── */
-.hero {
+.landing-hero {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -67,7 +67,7 @@ nav {
   overflow: hidden;
 }
 
-.hero::before {
+.landing-hero::before {
   content: '';
   position: absolute;
   top: -200px;
@@ -78,7 +78,7 @@ nav {
   pointer-events: none;
 }
 
-.hero::after {
+.landing-hero::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -685,7 +685,7 @@ footer {
 @media (max-width: 768px) {
   nav { padding: 16px 20px; }
   .nav-links { display: none; }
-  .hero { grid-template-columns: 1fr; padding: 100px 20px 60px; gap: 60px; }
+  .landing-hero { grid-template-columns: 1fr; padding: 100px 20px 60px; gap: 60px; }
   .hero-right { display: none; }
   section { padding: 60px 20px; }
   .features-header { grid-template-columns: 1fr; gap: 20px; }

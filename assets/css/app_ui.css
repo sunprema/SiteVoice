@@ -738,3 +738,469 @@ body.app-ui::before {
   .data-table { font-size: 12px; }
   .data-table th, .data-table td { padding: 10px 12px; }
 }
+
+/* ─── SIGN OUT PAGE ─── */
+.sign-out-page {
+  min-height: 100vh;
+  background: var(--steel);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  position: relative;
+  overflow: hidden;
+}
+
+.sign-out-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sign-out-glow {
+  position: fixed;
+  top: -120px;
+  left: -120px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255,92,0,0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sign-out-logo {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 2px;
+  color: var(--white);
+  text-decoration: none;
+  margin-bottom: 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.sign-out-logo span { color: var(--orange); }
+
+.sign-out-card {
+  background: var(--steel-mid);
+  border: 1px solid rgba(61,79,101,0.5);
+  border-radius: 8px;
+  padding: 48px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.sign-out-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255,92,0,0.1);
+  border: 1px solid rgba(255,92,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.sign-out-heading {
+  font-family: var(--font-display);
+  font-size: 32px;
+  letter-spacing: 2px;
+  color: var(--white);
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.sign-out-sub {
+  font-size: 14px;
+  color: var(--chalk);
+  opacity: 0.7;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.sign-out-btn {
+  width: 100%;
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 14px 24px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.sign-out-btn:hover { background: var(--orange-hot); transform: translateY(-1px); }
+.sign-out-btn:active { transform: scale(0.98); }
+
+.sign-out-cancel {
+  display: block;
+  font-size: 13px;
+  color: var(--chalk);
+  opacity: 0.6;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.sign-out-cancel:hover { opacity: 1; }
+
+.sign-out-footer {
+  margin-top: 32px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--chalk);
+  opacity: 0.3;
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 480px) {
+  .sign-out-card { padding: 32px 24px; margin: 0 16px; }
+  .sign-out-heading { font-size: 26px; }
+}
+
+/* ─── AUTH PAGES (sign-in, reset, confirm) ─── */
+.auth-page {
+  min-height: 100vh;
+  background: var(--steel);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-page::after {
+  content: '';
+  position: fixed;
+  top: -120px;
+  left: -120px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255,92,0,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-card {
+  background: var(--steel-mid);
+  border: 1px solid rgba(61,79,101,0.5);
+  border-radius: 8px;
+  padding: 40px 48px;
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Logo banner ─── */
+.auth-banner {
+  text-align: center;
+  margin-bottom: 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid rgba(61,79,101,0.4);
+}
+
+.auth-logo-link {
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: 3px;
+  color: var(--white);
+  text-decoration: none;
+  display: inline-block;
+  transition: opacity 0.2s;
+}
+
+.auth-logo-link::after {
+  content: '';
+  display: block;
+  height: 2px;
+  width: 32px;
+  background: var(--orange);
+  margin: 6px auto 0;
+  border-radius: 1px;
+}
+
+.auth-logo-link:hover { opacity: 0.85; }
+
+/* ─── Form heading ─── */
+.auth-form-heading {
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: 2px;
+  color: var(--white);
+  margin-bottom: 24px;
+  line-height: 1;
+  display: block;
+}
+
+/* ─── Form layout ─── */
+.auth-form { width: 100%; }
+
+.auth-field { margin-bottom: 18px; }
+
+.auth-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--chalk);
+  opacity: 0.65;
+  margin-bottom: 6px;
+}
+
+.auth-input {
+  width: 100%;
+  background: var(--steel);
+  border: 1px solid rgba(61,79,101,0.6);
+  border-radius: 4px;
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  display: block;
+}
+
+.auth-input:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(255,92,0,0.1);
+}
+
+.auth-input--error {
+  border-color: var(--red);
+}
+
+.auth-input--error:focus {
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+}
+
+/* ─── Submit button ─── */
+.auth-submit {
+  width: 100%;
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 14px 24px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  display: block;
+  margin-top: 24px;
+}
+
+.auth-submit:hover { background: var(--orange-hot); transform: translateY(-1px); }
+.auth-submit:active { transform: scale(0.98); }
+.auth-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ─── Toggle / interstitial ─── */
+.auth-interstitial {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.auth-toggler {
+  font-size: 12px;
+  color: var(--chalk);
+  opacity: 0.55;
+  text-decoration: none;
+  transition: opacity 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+.auth-toggler:hover { opacity: 1; color: var(--orange); }
+
+.auth-hidden { display: none; }
+
+/* ─── Field errors ─── */
+.auth-error-list {
+  list-style: none;
+  margin-top: 5px;
+}
+
+.auth-error-item {
+  font-size: 12px;
+  color: var(--red);
+  font-family: var(--font-mono);
+}
+
+/* ─── Authentication error banner (wrong password etc) ─── */
+.auth-alert-error {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 4px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+}
+
+.auth-alert-error-text {
+  font-size: 13px;
+  color: var(--red);
+  text-align: center;
+}
+
+/* ─── Flash messages ─── */
+.auth-flash {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  max-width: 360px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  z-index: 9999;
+  animation: fadeUp 0.3s ease both;
+}
+
+.auth-flash--info {
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: #22c55e;
+}
+
+.auth-flash--error {
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: var(--red);
+}
+
+/* ─── Horizontal rule between strategies ─── */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(61,79,101,0.4);
+  border: none;
+}
+
+.auth-divider-text-wrap { flex-shrink: 0; }
+
+.auth-divider-text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--chalk);
+  opacity: 0.4;
+}
+
+/* ─── Footer tagline below card ─── */
+.auth-footer {
+  margin-top: 28px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--chalk);
+  opacity: 0.25;
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 480px) {
+  .auth-card { padding: 32px 24px; margin: 0 16px; }
+  .auth-logo-link { font-size: 22px; }
+}
+
+
+/* ─── Standalone logo (above auth card, used on register/sign-out) ─── */
+.auth-logo-standalone {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 2px;
+  color: var(--white);
+  text-decoration: none;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.2s;
+}
+
+.auth-logo-standalone span { color: var(--orange); }
+.auth-logo-standalone:hover { opacity: 0.85; }
+
+/* ─── Auth card tagline ─── */
+.auth-tagline {
+  font-size: 13px;
+  color: var(--chalk);
+  opacity: 0.6;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+/* ─── Auth page glow (for controller-rendered pages) ─── */
+.auth-page-glow {
+  position: fixed;
+  top: -120px;
+  left: -120px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255,92,0,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── CONFIRM EMAIL PAGE ─── */
+.auth-confirm-body {
+  text-align: center;
+}
+
+.auth-confirm-body::before {
+  content: "Click the button below to verify your email address and activate your SiteVoice AI account.";
+  display: block;
+  font-size: 14px;
+  color: var(--chalk);
+  opacity: 0.65;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.auth-confirm-body .auth-submit {
+  margin-top: 0;
+}
