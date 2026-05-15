@@ -179,7 +179,7 @@ defmodule Sitevoice.Reporting.DailyLog do
       authorize_if actor_attribute_equals(:role, :org_admin)
     end
 
-    policy action(:read) do
+    policy action([:read, :list_for_project, :list_for_date_range]) do
       authorize_if relates_to_actor_via(:foreman)
       authorize_if actor_attribute_equals(:role, :pm)
       authorize_if actor_attribute_equals(:role, :org_admin)

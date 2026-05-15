@@ -226,7 +226,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
   end
 
   defp format_error(%Ash.Error.Invalid{errors: errors}) do
-    errors |> Enum.map(& &1.message) |> Enum.join(", ")
+    errors |> Enum.map(&Exception.message/1) |> Enum.join(", ")
   end
 
   defp format_error(%Ash.Error.Forbidden{}) do

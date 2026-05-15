@@ -149,9 +149,7 @@ defmodule SitevoiceWeb.Projects.IndexLive do
   end
 
   defp format_error(%Ash.Error.Invalid{errors: errors}) do
-    errors
-    |> Enum.map(fn e -> e.message end)
-    |> Enum.join(", ")
+    errors |> Enum.map(&Exception.message/1) |> Enum.join(", ")
   end
 
   defp format_error(error), do: inspect(error)

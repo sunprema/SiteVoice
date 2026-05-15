@@ -64,12 +64,12 @@ defmodule SitevoiceWeb.Logs.NewLive do
         {:ok, audio_key} ->
           log_params = %{
             date: Date.utc_today(),
-            audio_key: audio_key
+            audio_key: audio_key,
+            project_id: project.id
           }
 
           case Ash.create(Sitevoice.Reporting.DailyLog, log_params,
                  action: :submit_recording,
-                 arguments: [project_id: project.id],
                  tenant: org_id,
                  actor: user,
                  authorize?: true
@@ -230,7 +230,7 @@ defmodule SitevoiceWeb.Logs.NewLive do
   defp friendly_error(err), do: inspect(err)
 
   defp format_error(%Ash.Error.Invalid{errors: errors}) do
-    errors |> Enum.map(& &1.message) |> Enum.join(", ")
+    errors |> Enum.map(&Exception.message/1) |> Enum.join(", ")
   end
 
   defp format_error(error), do: inspect(error)
