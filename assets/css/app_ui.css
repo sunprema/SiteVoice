@@ -166,8 +166,20 @@ body.app-ui::before {
   transform-origin: left;
   transition: transform 0.3s ease;
 }
-.card:hover { background: var(--slate); }
-.card:hover::before { transform: scaleX(1); }
+.row-item {
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.row-item:hover { background: rgba(61,79,101,0.35); }
+
+.card-link {
+  display: block;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+.card-link:hover { background: var(--slate); }
+.card-link:hover::before { transform: scaleX(1); }
 
 .card-sm {
   background: var(--steel-light);
@@ -558,7 +570,8 @@ body.app-ui::before {
   color: var(--chalk);
 }
 .data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { background: var(--steel-light); }
+.data-table tbody tr.tr-link { cursor: pointer; }
+.data-table tbody tr.tr-link:hover td { background: rgba(61,79,101,0.35); }
 
 /* ─── SUCCESS OVERLAY ─── */
 .success-card {

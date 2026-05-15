@@ -57,7 +57,8 @@ defmodule SitevoiceWeb.Logs.IndexLive do
     ~H"""
     <div class="app-ui">
       <.nav current_user={@current_user} current_path="/logs" />
-      <div class="app-page" style="padding: 40px; max-width: 1100px; margin: 0 auto;">
+      <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
+        <div style="max-width: 1100px; margin: 0 auto;">
         <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
           <div class="section-label">All Logs</div>
           <div class="display-heading">PM Dashboard</div>
@@ -99,7 +100,7 @@ defmodule SitevoiceWeb.Logs.IndexLive do
                 </tr>
               <% else %>
                 <%= for log <- @logs do %>
-                  <tr>
+                  <tr class="tr-link" phx-click={JS.navigate(log_link(log))}>
                     <td><%= Calendar.strftime(log.date, "%b %d, %Y") %></td>
                     <td>
                       <span style="font-family: var(--font-mono); font-size: 12px; color: var(--orange);">
@@ -111,15 +112,14 @@ defmodule SitevoiceWeb.Logs.IndexLive do
                     </td>
                     <td><.log_status_pill status={log.status} /></td>
                     <td style="text-align: right;">
-                      <a href={log_link(log)} class="chevron-link" style="justify-content: flex-end;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                      </a>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.4;"><polyline points="9 18 15 12 9 6"/></svg>
                     </td>
                   </tr>
                 <% end %>
               <% end %>
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </div>

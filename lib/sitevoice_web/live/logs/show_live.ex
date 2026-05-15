@@ -232,7 +232,8 @@ defmodule SitevoiceWeb.Logs.ShowLive do
     ~H"""
     <div class="app-ui">
       <.nav current_user={@current_user} current_path="/logs" />
-      <div class="app-page" style="padding: 40px; max-width: 860px; margin: 0 auto;">
+      <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
+        <div style="max-width: 860px; margin: 0 auto;">
 
         <%!-- Header --%>
         <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
@@ -353,6 +354,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
           </div>
         <% end %>
 
+        </div>
       </div>
     </div>
     """

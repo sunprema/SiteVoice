@@ -107,7 +107,8 @@ defmodule SitevoiceWeb.Projects.ShowLive do
     ~H"""
     <div class="app-ui">
       <.nav current_user={@current_user} current_path="/projects" />
-      <div class="app-page" style="padding: 40px; max-width: 1000px; margin: 0 auto;">
+      <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
+        <div style="max-width: 1000px; margin: 0 auto;">
         <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
           <a href={~p"/projects"} class="chevron-link" style="margin-bottom: 16px; display: inline-flex;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -141,7 +142,7 @@ defmodule SitevoiceWeb.Projects.ShowLive do
                 </div>
               <% else %>
                 <%= for log <- @logs do %>
-                  <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid rgba(61,79,101,0.3);">
+                  <a href={log_link(log)} class="row-item" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid rgba(61,79,101,0.3); text-decoration: none; border-radius: 0;">
                     <div>
                       <div style="font-size: 13px; color: var(--white); margin-bottom: 4px;">
                         <%= Calendar.strftime(log.date, "%b %d, %Y") %>
@@ -152,11 +153,9 @@ defmodule SitevoiceWeb.Projects.ShowLive do
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px;">
                       <.log_status_pill status={log.status} />
-                      <a href={log_link(log)} class="chevron-link">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                      </a>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.4; flex-shrink: 0;"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
-                  </div>
+                  </a>
                 <% end %>
               <% end %>
             </div>
@@ -213,6 +212,7 @@ defmodule SitevoiceWeb.Projects.ShowLive do
               <% end %>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

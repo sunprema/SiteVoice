@@ -46,9 +46,9 @@ defmodule SitevoiceWeb.DashboardLive do
              tenant: org_id,
              actor: user,
              authorize?: true,
-             load: [:pdf_url]
+             load: [:pdf_url, :project]
            ) do
-        {:ok, logs} -> Enum.take(logs, 5)
+        {:ok, logs} -> Enum.take(logs, 10)
         {:error, reason} ->
           Logger.error("DashboardLive failed to load recent logs for foreman=#{user.id}: #{inspect(reason)}")
           []
@@ -79,10 +79,34 @@ defmodule SitevoiceWeb.DashboardLive do
 
     counts = Enum.frequencies_by(all_logs, & &1.status)
 
+    recent_logs =
+      case Sitevoice.Reporting.list_logs(nil, nil,
+             tenant: org_id,
+             actor: user,
+             authorize?: true,
+             load: [:project]
+           ) do
+        {:ok, logs} -> Enum.take(logs, 10)
+        {:error, _reason} -> []
+      end
+
+    projects =
+      case Sitevoice.Projects.list_projects(
+             tenant: org_id,
+             actor: user,
+             authorize?: true,
+             load: [:report_count, :last_report_date]
+           ) do
+        {:ok, projs} -> Enum.take(projs, 10)
+        {:error, _reason} -> []
+      end
+
     assign(socket,
       view: :pm,
       today_counts: counts,
-      today_total: length(all_logs)
+      today_total: length(all_logs),
+      recent_logs: recent_logs,
+      projects: projects
     )
   end
 
@@ -162,7 +186,10 @@ defmodule SitevoiceWeb.DashboardLive do
 
       <%!-- Recent Reports --%>
       <div class="card">
-        <div class="section-label">Recent Reports</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+          <div class="section-label" style="margin-bottom: 0;">Recent Reports</div>
+          <a href={~p"/logs"} style="font-family: var(--font-mono); font-size: 11px; color: var(--orange); text-decoration: none; letter-spacing: 0.5px;">VIEW ALL →</a>
+        </div>
         <%= if @recent_logs == [] do %>
           <div class="empty-state">
             <div class="empty-state-title">No Reports Yet</div>
@@ -171,17 +198,20 @@ defmodule SitevoiceWeb.DashboardLive do
         <% else %>
           <div style="display: flex; flex-direction: column; gap: 0;">
             <%= for log <- @recent_logs do %>
-              <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(61,79,101,0.3);">
+              <a href={log_link(log)} class="row-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 8px; border-bottom: 1px solid rgba(61,79,101,0.3); text-decoration: none;">
                 <div>
-                  <div style="font-size: 14px; color: var(--white); margin-bottom: 4px;">
+                  <div style="font-size: 14px; color: var(--white); margin-bottom: 2px;">
                     <%= Calendar.strftime(log.date, "%B %d, %Y") %>
                   </div>
+                  <%= if log.project do %>
+                    <div style="font-size: 11px; color: var(--chalk); opacity: 0.6; margin-bottom: 4px; font-family: var(--font-mono);">
+                      <%= log.project.code %> · <%= log.project.name %>
+                    </div>
+                  <% end %>
                   <.status_pill status={log.status} />
                 </div>
-                <a href={log_link(log)} class="chevron-link">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                </a>
-              </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--chalk)" stroke-width="2" style="opacity:0.4; flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
             <% end %>
           </div>
         <% end %>
@@ -220,9 +250,71 @@ defmodule SitevoiceWeb.DashboardLive do
         </div>
       </div>
 
-      <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+      <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 32px;">
         <a href={~p"/logs"} class="btn-primary">View All Logs →</a>
         <a href={~p"/projects"} class="btn-ghost">Manage Projects</a>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; flex-wrap: wrap;">
+        <%!-- Recent Logs Panel --%>
+        <div class="card">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+            <div class="section-label" style="margin-bottom: 0;">Recent Logs</div>
+            <a href={~p"/logs"} style="font-family: var(--font-mono); font-size: 11px; color: var(--orange); text-decoration: none; letter-spacing: 0.5px;">ALL →</a>
+          </div>
+          <%= if @recent_logs == [] do %>
+            <div style="color: var(--chalk); opacity: 0.5; font-size: 13px; padding: 16px 0;">No logs yet.</div>
+          <% else %>
+            <div style="display: flex; flex-direction: column;">
+              <%= for log <- @recent_logs do %>
+                <a href={log_link(log)} class="row-item" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 8px; border-bottom: 1px solid rgba(61,79,101,0.3); text-decoration: none;">
+                  <div style="min-width: 0;">
+                    <div style="font-size: 13px; color: var(--white); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <%= Calendar.strftime(log.date, "%b %d, %Y") %>
+                    </div>
+                    <%= if log.project do %>
+                      <div style="font-size: 11px; color: var(--chalk); opacity: 0.55; font-family: var(--font-mono); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        <%= log.project.code %>
+                      </div>
+                    <% end %>
+                    <.status_pill status={log.status} />
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--chalk)" stroke-width="2" style="opacity:0.4; flex-shrink:0; margin-left:8px;"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <%!-- Projects Panel --%>
+        <div class="card">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+            <div class="section-label" style="margin-bottom: 0;">Projects</div>
+            <a href={~p"/projects"} style="font-family: var(--font-mono); font-size: 11px; color: var(--orange); text-decoration: none; letter-spacing: 0.5px;">ALL →</a>
+          </div>
+          <%= if @projects == [] do %>
+            <div style="color: var(--chalk); opacity: 0.5; font-size: 13px; padding: 16px 0;">No projects yet.</div>
+          <% else %>
+            <div style="display: flex; flex-direction: column;">
+              <%= for project <- @projects do %>
+                <a href={~p"/projects/#{project.id}"} class="row-item" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 8px; border-bottom: 1px solid rgba(61,79,101,0.3); text-decoration: none;">
+                  <div style="min-width: 0;">
+                    <div style="font-size: 13px; color: var(--white); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <%= project.name %>
+                    </div>
+                    <div style="font-size: 11px; color: var(--chalk); opacity: 0.55; font-family: var(--font-mono);">
+                      <%= project.code %>
+                      <%= if project.report_count && project.report_count > 0 do %>
+                        · <%= project.report_count %> reports
+                      <% end %>
+                    </div>
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--chalk)" stroke-width="2" style="opacity:0.4; flex-shrink:0; margin-left:8px;"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
       </div>
     </div>
     """
