@@ -1,8 +1,6 @@
 defmodule SitevoiceWeb.Logs.IndexLive do
   use SitevoiceWeb, :live_view
 
-  require Ash.Query
-
   import SitevoiceWeb.NavComponent
 
   on_mount {SitevoiceWeb.LiveUserAuth, :live_user_required}
@@ -142,33 +140,18 @@ defmodule SitevoiceWeb.Logs.IndexLive do
   end
 
   defp load_logs(org_id, user, project_id, status) do
-    query =
-      Sitevoice.Reporting.DailyLog
-      |> Ash.Query.sort(inserted_at: :desc)
-      |> maybe_filter_project(project_id)
-      |> maybe_filter_status(status)
-
-    case Ash.read(query,
+    case Sitevoice.Reporting.list_logs(project_id, status,
            tenant: org_id,
            actor: user,
            authorize?: true,
            load: [:foreman, :project]
          ) do
       {:ok, logs} -> logs
-      _ -> []
+      {:error, reason} ->
+        require Logger
+        Logger.error("IndexLive failed to load logs for org=#{org_id}: #{inspect(reason)}")
+        []
     end
-  end
-
-  defp maybe_filter_project(query, nil), do: query
-
-  defp maybe_filter_project(query, project_id) do
-    Ash.Query.filter(query, project_id == ^project_id)
-  end
-
-  defp maybe_filter_status(query, nil), do: query
-
-  defp maybe_filter_status(query, status) do
-    Ash.Query.filter(query, status == ^status)
   end
 
   defp nil_if_blank(nil), do: nil

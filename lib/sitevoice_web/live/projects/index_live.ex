@@ -1,7 +1,6 @@
 defmodule SitevoiceWeb.Projects.IndexLive do
   use SitevoiceWeb, :live_view
 
-  require Ash.Query
   require Logger
 
   import SitevoiceWeb.NavComponent
@@ -38,8 +37,7 @@ defmodule SitevoiceWeb.Projects.IndexLive do
     user = socket.assigns.current_user
     org_id = socket.assigns.tenant
 
-    case Ash.create(Sitevoice.Projects.Project, params,
-           action: :create,
+    case Sitevoice.Projects.create_project(params,
            tenant: org_id,
            actor: user,
            authorize?: true
@@ -135,15 +133,12 @@ defmodule SitevoiceWeb.Projects.IndexLive do
   end
 
   defp load_projects(org_id, user) do
-    Sitevoice.Projects.Project
-    |> Ash.Query.sort(inserted_at: :desc)
-    |> Ash.read(
-      tenant: org_id,
-      actor: user,
-      authorize?: true,
-      load: [:report_count]
-    )
-    |> case do
+    case Sitevoice.Projects.list_projects(
+           tenant: org_id,
+           actor: user,
+           authorize?: true,
+           load: [:report_count]
+         ) do
       {:ok, projects} -> projects
       {:error, reason} ->
         Logger.error("ProjectsIndexLive failed to load projects for org=#{org_id}: #{inspect(reason)}")

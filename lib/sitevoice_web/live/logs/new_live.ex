@@ -11,7 +11,7 @@ defmodule SitevoiceWeb.Logs.NewLive do
     org_id = to_string(user.organization_id)
 
     project_result =
-      Ash.get(Sitevoice.Projects.Project, project_id,
+      Sitevoice.Projects.get_project(project_id,
         tenant: org_id,
         actor: user,
         authorize?: true
@@ -68,8 +68,7 @@ defmodule SitevoiceWeb.Logs.NewLive do
             project_id: project.id
           }
 
-          case Ash.create(Sitevoice.Reporting.DailyLog, log_params,
-                 action: :submit_recording,
+          case Sitevoice.Reporting.submit_recording(log_params,
                  tenant: org_id,
                  actor: user,
                  authorize?: true
@@ -120,11 +119,7 @@ defmodule SitevoiceWeb.Logs.NewLive do
       with {:ok, binary} <- File.read(path),
            {:ok, _} <- Sitevoice.Storage.store_photo(key, binary),
            {:ok, _} <-
-             Ash.create(
-               Sitevoice.Reporting.Photo,
-               %{storage_key: key},
-               action: :upload,
-               arguments: %{daily_log_id: log_id},
+             Sitevoice.Reporting.upload_photo(key, log_id,
                tenant: org_id,
                actor: user,
                authorize?: true

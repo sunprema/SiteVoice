@@ -3,7 +3,6 @@ defmodule SitevoiceWeb.LogChannel do
 
   require Logger
 
-  alias Sitevoice.Reporting.DailyLog
 
   @impl true
   def join("log:" <> log_id, _params, socket) do
@@ -16,7 +15,7 @@ defmodule SitevoiceWeb.LogChannel do
       org_id: org_id
     )
 
-    case Ash.get(DailyLog, log_id, tenant: to_string(org_id), authorize?: false) do
+    case Sitevoice.Reporting.get_log(log_id, tenant: to_string(org_id), authorize?: false) do
       {:ok, log} ->
         topic = "org:#{org_id}:log:#{log_id}"
         Phoenix.PubSub.subscribe(Sitevoice.PubSub, topic)

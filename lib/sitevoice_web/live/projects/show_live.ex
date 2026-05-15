@@ -1,8 +1,6 @@
 defmodule SitevoiceWeb.Projects.ShowLive do
   use SitevoiceWeb, :live_view
 
-  require Ash.Query
-
   import SitevoiceWeb.NavComponent
 
   on_mount {SitevoiceWeb.LiveUserAuth, :live_user_required}
@@ -13,17 +11,19 @@ defmodule SitevoiceWeb.Projects.ShowLive do
     org_id = to_string(user.organization_id)
 
     with {:ok, project} <-
-           Ash.get(Sitevoice.Projects.Project, project_id,
+           Sitevoice.Projects.get_project(project_id,
              tenant: org_id,
              actor: user,
              authorize?: true,
              load: [:memberships]
            ),
          {:ok, logs} <-
-           Sitevoice.Reporting.DailyLog
-           |> Ash.Query.for_read(:list_for_project, %{project_id: project_id})
-           |> Ash.Query.load([:foreman])
-           |> Ash.read(tenant: org_id, actor: user, authorize?: true) do
+           Sitevoice.Reporting.list_logs_for_project(project_id,
+             tenant: org_id,
+             actor: user,
+             authorize?: true,
+             load: [:foreman]
+           ) do
       {:ok,
        socket
        |> assign(:tenant, org_id)
@@ -56,9 +56,11 @@ defmodule SitevoiceWeb.Projects.ShowLive do
     project = socket.assigns.project
 
     user_result =
-      Sitevoice.Accounts.User
-      |> Ash.Query.filter(email == ^params["email"])
-      |> Ash.read_one(tenant: org_id, actor: user, authorize?: false)
+      Sitevoice.Accounts.get_user_by_email(params["email"],
+        tenant: org_id,
+        actor: user,
+        authorize?: false
+      )
 
     case user_result do
       {:ok, nil} ->
@@ -71,15 +73,14 @@ defmodule SitevoiceWeb.Projects.ShowLive do
           role: String.to_existing_atom(params["role"])
         }
 
-        case Ash.create(Sitevoice.Projects.ProjectMembership, membership_params,
-               action: :add_member,
+        case Sitevoice.Projects.add_member(membership_params,
                tenant: org_id,
                actor: user,
                authorize?: true
              ) do
           {:ok, _membership} ->
             {:ok, updated_project} =
-              Ash.get(Sitevoice.Projects.Project, project.id,
+              Sitevoice.Projects.get_project(project.id,
                 tenant: org_id,
                 actor: user,
                 authorize?: true,

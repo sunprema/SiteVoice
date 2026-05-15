@@ -145,6 +145,35 @@ defmodule Sitevoice.Reporting.DailyLog do
       prepare build(sort: [date: :desc])
     end
 
+    read :list_for_foreman do
+      argument :foreman_id, :uuid, allow_nil?: false
+      filter expr(foreman_id == ^arg(:foreman_id))
+      prepare build(sort: [date: :desc])
+    end
+
+    read :get_today_for_foreman do
+      argument :foreman_id, :uuid, allow_nil?: false
+      argument :date, :date, allow_nil?: false
+      filter expr(foreman_id == ^arg(:foreman_id) and date == ^arg(:date))
+      get? true
+    end
+
+    read :list_for_date do
+      argument :date, :date, allow_nil?: false
+      filter expr(date == ^arg(:date))
+      prepare build(sort: [inserted_at: :desc])
+    end
+
+    read :list_all do
+      argument :project_id, :uuid, allow_nil?: true
+      argument :status, :atom, allow_nil?: true
+      filter expr(
+        (is_nil(^arg(:project_id)) or project_id == ^arg(:project_id)) and
+          (is_nil(^arg(:status)) or status == ^arg(:status))
+      )
+      prepare build(sort: [inserted_at: :desc])
+    end
+
     destroy :destroy do
       require_atomic? false
       change before_action(fn changeset, _ ->
@@ -184,7 +213,7 @@ defmodule Sitevoice.Reporting.DailyLog do
       authorize_if actor_attribute_equals(:role, :org_admin)
     end
 
-    policy action([:read, :list_for_project, :list_for_date_range]) do
+    policy action([:read, :list_for_project, :list_for_date_range, :list_for_foreman, :get_today_for_foreman, :list_for_date, :list_all]) do
       authorize_if relates_to_actor_via(:foreman)
       authorize_if actor_attribute_equals(:role, :pm)
       authorize_if actor_attribute_equals(:role, :org_admin)

@@ -3,7 +3,7 @@ defmodule SitevoiceWeb.RecordingChannel do
 
   require Logger
 
-  alias Sitevoice.Reporting.DailyLog
+
 
   @impl true
   def join("recording:" <> log_id, _params, socket) do
@@ -77,7 +77,7 @@ defmodule SitevoiceWeb.RecordingChannel do
     org_id = socket.assigns.current_user.organization_id
     user_id = socket.assigns.current_user.id
 
-    case Ash.get(DailyLog, log_id, tenant: to_string(org_id), authorize?: false) do
+    case Sitevoice.Reporting.get_log(log_id, tenant: to_string(org_id), authorize?: false) do
       {:ok, log} ->
         log.foreman_id == user_id
 

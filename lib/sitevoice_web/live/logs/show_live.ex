@@ -19,7 +19,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
     user = socket.assigns.current_user
     org_id = to_string(user.organization_id)
 
-    case Ash.get(Sitevoice.Reporting.DailyLog, log_id,
+    case Sitevoice.Reporting.get_log(log_id,
            tenant: org_id,
            actor: user,
            authorize?: true,
@@ -47,8 +47,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
     org_id = socket.assigns.tenant
     log = socket.assigns.log
 
-    case Ash.update(log, %{},
-           action: :approve_and_submit,
+    case Sitevoice.Reporting.approve_and_submit(log, %{},
            tenant: org_id,
            actor: user,
            authorize?: true

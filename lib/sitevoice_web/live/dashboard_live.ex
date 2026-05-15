@@ -1,7 +1,6 @@
 defmodule SitevoiceWeb.DashboardLive do
   use SitevoiceWeb, :live_view
 
-  require Ash.Query
   require Logger
 
   import SitevoiceWeb.NavComponent
@@ -30,15 +29,12 @@ defmodule SitevoiceWeb.DashboardLive do
     today = Date.utc_today()
 
     today_log =
-      Sitevoice.Reporting.DailyLog
-      |> Ash.Query.filter(foreman_id == ^user.id and date == ^today)
-      |> Ash.read_one(
-        tenant: org_id,
-        actor: user,
-        authorize?: true,
-        load: [:pdf_url]
-      )
-      |> case do
+      case Sitevoice.Reporting.get_today_log_for_foreman(user.id, today,
+             tenant: org_id,
+             actor: user,
+             authorize?: true,
+             load: [:pdf_url]
+           ) do
         {:ok, log} -> log
         {:error, reason} ->
           Logger.error("DashboardLive failed to load today's log for foreman=#{user.id}: #{inspect(reason)}")
@@ -46,18 +42,13 @@ defmodule SitevoiceWeb.DashboardLive do
       end
 
     recent_logs =
-      Sitevoice.Reporting.DailyLog
-      |> Ash.Query.filter(foreman_id == ^user.id)
-      |> Ash.Query.sort(inserted_at: :desc)
-      |> Ash.Query.limit(5)
-      |> Ash.read(
-        tenant: org_id,
-        actor: user,
-        authorize?: true,
-        load: [:pdf_url]
-      )
-      |> case do
-        {:ok, logs} -> logs
+      case Sitevoice.Reporting.list_logs_for_foreman(user.id,
+             tenant: org_id,
+             actor: user,
+             authorize?: true,
+             load: [:pdf_url]
+           ) do
+        {:ok, logs} -> Enum.take(logs, 5)
         {:error, reason} ->
           Logger.error("DashboardLive failed to load recent logs for foreman=#{user.id}: #{inspect(reason)}")
           []
@@ -75,10 +66,11 @@ defmodule SitevoiceWeb.DashboardLive do
     today = Date.utc_today()
 
     all_logs =
-      Sitevoice.Reporting.DailyLog
-      |> Ash.Query.filter(date == ^today)
-      |> Ash.read(tenant: org_id, actor: user, authorize?: true)
-      |> case do
+      case Sitevoice.Reporting.list_logs_for_date(today,
+             tenant: org_id,
+             actor: user,
+             authorize?: true
+           ) do
         {:ok, logs} -> logs
         {:error, reason} ->
           Logger.error("DashboardLive failed to load PM logs for org=#{org_id}: #{inspect(reason)}")

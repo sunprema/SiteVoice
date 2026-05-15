@@ -12,7 +12,7 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
     user = socket.assigns.current_user
     org_id = to_string(user.organization_id)
 
-    case Ash.get(Sitevoice.Reporting.DailyLog, log_id,
+    case Sitevoice.Reporting.get_log(log_id,
            tenant: org_id,
            actor: user,
            authorize?: true
