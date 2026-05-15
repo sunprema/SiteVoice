@@ -47,6 +47,7 @@ defmodule Sitevoice.Reporting.DailyLog do
     attribute :pdf_key, :string
     attribute :weather, :string
     attribute :submitted_at, :utc_datetime
+    attribute :corrections, {:array, :map}, default: []
 
     timestamps()
   end
@@ -124,7 +125,7 @@ defmodule Sitevoice.Reporting.DailyLog do
     end
 
     update :edit_draft do
-      accept [:labor, :progress, :equipment, :materials, :delays, :safety, :weather, :pdf_key]
+      accept [:labor, :progress, :equipment, :materials, :delays, :safety, :weather, :pdf_key, :corrections]
     end
 
     read :read do

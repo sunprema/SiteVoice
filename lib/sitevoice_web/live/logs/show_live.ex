@@ -3,6 +3,8 @@ defmodule SitevoiceWeb.Logs.ShowLive do
 
   import SitevoiceWeb.NavComponent
 
+  require Logger
+
   on_mount {SitevoiceWeb.LiveUserAuth, :live_user_required}
 
   @categories [
@@ -32,13 +34,113 @@ defmodule SitevoiceWeb.Logs.ShowLive do
          |> assign(:log, log)
          |> assign(:show_success, false)
          |> assign(:approve_error, nil)
-         |> assign(:regenerating_pdf, false)}
+         |> assign(:regenerating_pdf, false)
+         |> assign(:editing, nil)
+         |> assign(:edit_form, %{})
+         |> assign(:edit_confirmed, false)}
 
       {:error, _} ->
         {:ok,
          socket
          |> put_flash(:error, "Log not found.")
          |> push_navigate(to: ~p"/dashboard")}
+    end
+  end
+
+  @impl true
+  def handle_event("start_edit", %{"category" => cat, "index" => idx_str}, socket) do
+    category = String.to_existing_atom(cat)
+    idx = String.to_integer(idx_str)
+    entries = Map.get(socket.assigns.log, category) || []
+    entry = Enum.at(entries, idx) || %{}
+
+    {:noreply,
+     socket
+     |> assign(:editing, {category, idx})
+     |> assign(:edit_form, entry)
+     |> assign(:edit_confirmed, false)}
+  end
+
+  @impl true
+  def handle_event("cancel_edit", _, socket) do
+    {:noreply,
+     socket
+     |> assign(:editing, nil)
+     |> assign(:edit_form, %{})
+     |> assign(:edit_confirmed, false)}
+  end
+
+  @impl true
+  def handle_event("update_edit_form", %{"entry" => entry_params}, socket) do
+    updated_form = Map.merge(socket.assigns.edit_form, entry_params)
+    {:noreply, assign(socket, :edit_form, updated_form)}
+  end
+
+  @impl true
+  def handle_event("toggle_confirm", _, socket) do
+    {:noreply, assign(socket, :edit_confirmed, !socket.assigns.edit_confirmed)}
+  end
+
+  @impl true
+  def handle_event("save_correction", _, socket) do
+    if not socket.assigns.edit_confirmed do
+      {:noreply, socket}
+    else
+      {category, idx} = socket.assigns.editing
+      log = socket.assigns.log
+      entries = Map.get(log, category) || []
+      original_entry = Enum.at(entries, idx)
+
+      corrected_entry = Map.merge(original_entry || %{}, socket.assigns.edit_form)
+      updated_entries = List.replace_at(entries, idx, corrected_entry)
+
+      correction = %{
+        "category" => to_string(category),
+        "index" => idx,
+        "original" => original_entry,
+        "corrected_at" => DateTime.utc_now() |> DateTime.to_iso8601()
+      }
+
+      existing_corrections = log.corrections || []
+
+      filtered =
+        Enum.reject(existing_corrections, fn c ->
+          c["category"] == to_string(category) && c["index"] == idx
+        end)
+
+      new_corrections = filtered ++ [correction]
+
+      params =
+        %{corrections: new_corrections}
+        |> Map.put(category, updated_entries)
+
+      user = socket.assigns.current_user
+      org_id = socket.assigns.tenant
+
+      case Ash.update(log, params,
+             action: :edit_draft,
+             tenant: org_id,
+             actor: user,
+             authorize?: true
+           ) do
+        {:ok, updated_log} ->
+          {:ok, updated_log} =
+            Ash.load(updated_log, [:pdf_url, :audio_url, :photos, :foreman, :project],
+              tenant: org_id,
+              authorize?: false
+            )
+
+          {:noreply,
+           socket
+           |> assign(:log, updated_log)
+           |> assign(:editing, nil)
+           |> assign(:edit_form, %{})
+           |> assign(:edit_confirmed, false)
+           |> put_flash(:info, "Correction saved.")}
+
+        {:error, error} ->
+          {:noreply, assign(socket, :approve_error, format_error(error))}
+      end
     end
   end
 
@@ -113,7 +215,6 @@ defmodule SitevoiceWeb.Logs.ShowLive do
 
   @impl true
   def handle_info({:pdf_regenerated, {:error, reason}}, socket) do
-    require Logger
     Logger.error("PDF regeneration failed in ShowLive: #{inspect(reason)}")
 
     {:noreply,
@@ -126,6 +227,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
   def render(assigns) do
     assigns = assign(assigns, :all_complete, all_categories_present?(assigns.log))
     assigns = assign(assigns, :categories, @categories)
+    assigns = assign(assigns, :can_edit, can_edit_entries?(assigns.current_user, assigns.log))
 
     ~H"""
     <div class="app-ui">
@@ -227,6 +329,11 @@ defmodule SitevoiceWeb.Logs.ShowLive do
               label={label}
               color={color}
               entries={Map.get(@log, field) || []}
+              editing={@editing}
+              edit_form={@edit_form}
+              edit_confirmed={@edit_confirmed}
+              can_edit={@can_edit}
+              corrections={@log.corrections || []}
             />
           <% end %>
         </div>
@@ -293,11 +400,67 @@ defmodule SitevoiceWeb.Logs.ShowLive do
         <%= if @entries == [] do %>
           <div style="font-size: 12px; color: var(--chalk); opacity: 0.4; font-style: italic;">No entries captured.</div>
         <% else %>
-          <%= for entry <- @entries do %>
-            <div class="log-entry">
-              <span style={"color: #{@color}; flex-shrink: 0;"}>›</span>
-              <span><%= entry_text(entry) %></span>
-            </div>
+          <%= for {entry, idx} <- Enum.with_index(@entries) do %>
+            <%= if @editing == {@field, idx} do %>
+              <form phx-change="update_edit_form" phx-submit="save_correction"
+                    style="background: rgba(255,255,255,0.04); border-radius: 6px; padding: 12px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.10);">
+                <%= for {key, field_label, input_type} <- entry_fields(@field) do %>
+                  <div style="margin-bottom: 8px;">
+                    <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--chalk); opacity: 0.5; margin-bottom: 3px;">
+                      <%= field_label %>
+                    </div>
+                    <input
+                      type={input_type}
+                      name={"entry[#{key}]"}
+                      value={Map.get(@edit_form, key, "") |> to_string()}
+                      style="width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; padding: 6px 8px; font-size: 13px; color: var(--chalk); outline: none; box-sizing: border-box; font-family: inherit;"
+                    />
+                  </div>
+                <% end %>
+
+                <%!-- Confirmation toggle --%>
+                <button type="button" phx-click="toggle_confirm"
+                  style={"display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; color: var(--chalk); padding: 8px 0; width: 100%; text-align: left; opacity: #{if @edit_confirmed, do: "1", else: "0.6"};"}>
+                  <div style={"width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; background: #{if @edit_confirmed, do: "#10B981", else: "transparent"}; border: 1.5px solid #{if @edit_confirmed, do: "#10B981", else: "rgba(255,255,255,0.3)"}; color: white; line-height: 1;"}>
+                    <%= if @edit_confirmed, do: "✓", else: "" %>
+                  </div>
+                  <span style="font-size: 12px;">I confirm this is a manual correction</span>
+                </button>
+
+                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                  <button type="button" phx-click="cancel_edit"
+                    style="flex: 1; padding: 6px 0; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: var(--chalk); cursor: pointer; font-size: 12px; font-family: inherit;">
+                    Cancel
+                  </button>
+                  <button type="submit"
+                    disabled={not @edit_confirmed}
+                    style={"flex: 1; padding: 6px 0; background: #{if @edit_confirmed, do: "#10B981", else: "rgba(255,255,255,0.06)"}; border: 1px solid #{if @edit_confirmed, do: "#10B981", else: "rgba(255,255,255,0.12)"}; border-radius: 4px; color: #{if @edit_confirmed, do: "white", else: "var(--chalk)"}; cursor: #{if @edit_confirmed, do: "pointer", else: "not-allowed"}; font-size: 12px; font-family: inherit; opacity: #{if @edit_confirmed, do: "1", else: "0.5"};"}>
+                    Save Correction
+                  </button>
+                </div>
+              </form>
+            <% else %>
+              <div class="log-entry" style="justify-content: space-between; align-items: flex-start;">
+                <div style="display: flex; gap: 6px; align-items: flex-start; flex: 1; min-width: 0;">
+                  <span style={"color: #{@color}; flex-shrink: 0;"}>›</span>
+                  <span style="flex: 1; min-width: 0; word-break: break-word;"><%= entry_text(entry) %></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: 8px;">
+                  <%= if is_corrected?(@corrections, @field, idx) do %>
+                    <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #F59E0B;">Edited</span>
+                  <% end %>
+                  <%= if @can_edit do %>
+                    <button
+                      phx-click="start_edit"
+                      phx-value-category={@field}
+                      phx-value-index={idx}
+                      style="font-size: 11px; padding: 2px 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 3px; color: var(--chalk); cursor: pointer; opacity: 0.6; white-space: nowrap; font-family: inherit;">
+                      Edit
+                    </button>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
           <% end %>
         <% end %>
       </div>
@@ -316,6 +479,70 @@ defmodule SitevoiceWeb.Logs.ShowLive do
       <% _ -> %><span class="pill pill-pending"><%= @status %></span>
     <% end %>
     """
+  end
+
+  defp entry_fields(:labor) do
+    [
+      {"trade", "Trade", "text"},
+      {"headcount", "Headcount", "text"},
+      {"hours", "Hours", "text"},
+      {"crew", "Crew (optional)", "text"},
+      {"subcontractor", "Subcontractor (optional)", "text"}
+    ]
+  end
+
+  defp entry_fields(:equipment) do
+    [
+      {"item", "Equipment", "text"},
+      {"status", "Status", "text"},
+      {"note", "Note (optional)", "text"}
+    ]
+  end
+
+  defp entry_fields(:materials) do
+    [
+      {"item", "Material", "text"},
+      {"quantity", "Quantity", "text"},
+      {"received_at", "Received Date (optional)", "text"},
+      {"note", "Note (optional)", "text"}
+    ]
+  end
+
+  defp entry_fields(:delays) do
+    [
+      {"description", "Description", "text"},
+      {"cause", "Cause", "text"},
+      {"impact", "Impact (optional)", "text"},
+      {"hours_lost", "Hours Lost (optional)", "text"}
+    ]
+  end
+
+  defp entry_fields(:safety) do
+    [
+      {"description", "Description", "text"},
+      {"incident_type", "Incident Type", "text"}
+    ]
+  end
+
+  defp entry_fields(:progress) do
+    [
+      {"description", "Description", "text"},
+      {"location", "Location (optional)", "text"},
+      {"percentage_complete", "% Complete (optional)", "text"}
+    ]
+  end
+
+  defp entry_fields(_), do: []
+
+  defp is_corrected?(corrections, category, index) do
+    Enum.any?(corrections, fn c ->
+      c["category"] == to_string(category) && c["index"] == index
+    end)
+  end
+
+  defp can_edit_entries?(user, log) do
+    log.status == :draft &&
+      (user.role == :org_admin || (log.foreman_id && log.foreman_id == user.id))
   end
 
   # labor: {crew, headcount, trade, hours, subcontractor}
