@@ -31,7 +31,8 @@ defmodule SitevoiceWeb.Logs.ShowLive do
          |> assign(:tenant, org_id)
          |> assign(:log, log)
          |> assign(:show_success, false)
-         |> assign(:approve_error, nil)}
+         |> assign(:approve_error, nil)
+         |> assign(:regenerating_pdf, false)}
 
       {:error, _} ->
         {:ok,
@@ -39,6 +40,43 @@ defmodule SitevoiceWeb.Logs.ShowLive do
          |> put_flash(:error, "Log not found.")
          |> push_navigate(to: ~p"/dashboard")}
     end
+  end
+
+  @impl true
+  def handle_event("regenerate_pdf", _, socket) do
+    org_id = socket.assigns.tenant
+    log = socket.assigns.log
+    pid = self()
+
+    Task.start(fn ->
+      result =
+        with {:ok, log} <-
+               Ash.load(log, [:photos, :organization, :project, :foreman],
+                 tenant: org_id,
+                 authorize?: false
+               ),
+             {:ok, pdf_binary} <-
+               Sitevoice.Steps.GeneratePdf.run(%{log: log, organization_id: org_id}, nil, nil),
+             key = Sitevoice.Storage.pdf_key(org_id, log.project_id, log.id),
+             {:ok, _} <- Sitevoice.Storage.store_pdf(key, pdf_binary),
+             {:ok, updated} <-
+               Ash.update(log, %{pdf_key: key},
+                 action: :update_pdf,
+                 tenant: org_id,
+                 authorize?: false
+               ),
+             {:ok, updated} <-
+               Ash.load(updated, [:pdf_url, :photos, :foreman, :project],
+                 tenant: org_id,
+                 authorize?: false
+               ) do
+          {:ok, updated}
+        end
+
+      send(pid, {:pdf_regenerated, result})
+    end)
+
+    {:noreply, assign(socket, :regenerating_pdf, true)}
   end
 
   @impl true
@@ -62,6 +100,26 @@ defmodule SitevoiceWeb.Logs.ShowLive do
       {:error, error} ->
         {:noreply, assign(socket, :approve_error, format_error(error))}
     end
+  end
+
+  @impl true
+  def handle_info({:pdf_regenerated, {:ok, updated_log}}, socket) do
+    {:noreply,
+     socket
+     |> assign(:log, updated_log)
+     |> assign(:regenerating_pdf, false)
+     |> put_flash(:info, "PDF regenerated with latest photos.")}
+  end
+
+  @impl true
+  def handle_info({:pdf_regenerated, {:error, reason}}, socket) do
+    require Logger
+    Logger.error("PDF regeneration failed in ShowLive: #{inspect(reason)}")
+
+    {:noreply,
+     socket
+     |> assign(:regenerating_pdf, false)
+     |> put_flash(:error, "PDF regeneration failed. Please try again.")}
   end
 
   @impl true
@@ -91,6 +149,16 @@ defmodule SitevoiceWeb.Logs.ShowLive do
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                   Download PDF
                 </a>
+              <% end %>
+              <%= if @log.status == :draft && @log.photos != [] do %>
+                <button class="btn-secondary" phx-click="regenerate_pdf" disabled={@regenerating_pdf}>
+                  <%= if @regenerating_pdf do %>
+                    Regenerating…
+                  <% else %>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Regenerate PDF
+                  <% end %>
+                </button>
               <% end %>
               <%= if can_approve?(@current_user, @log) do %>
                 <button class="btn-primary" phx-click="approve_submit">

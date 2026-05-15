@@ -252,13 +252,19 @@
       width: 100%,
       stroke: 0.5pt + border,
       radius: 3pt,
-      inset: (x: 10pt, y: 8pt)
+      clip: true,
     )[
-      #text(size: 8pt, weight: "bold", fill: orange)[#upper(field(p, "category", fallback: "Photo"))]
-      #let cap = p.at("caption", default: "")
-      #if not empty-val(cap) [
-        #linebreak()
-        #text(size: 8.5pt, fill: slate)[#cap]
+      #let img-file = p.at("filename", default: "")
+      #if not empty-val(img-file) [
+        #image(img-file, width: 100%)
+      ]
+      #block(inset: (x: 10pt, y: 8pt))[
+        #text(size: 8pt, weight: "bold", fill: orange)[#upper(field(p, "category", fallback: "Photo"))]
+        #let cap = p.at("caption", default: "")
+        #if not empty-val(cap) [
+          #linebreak()
+          #text(size: 8.5pt, fill: slate)[#cap]
+        ]
       ]
     ])
   )
