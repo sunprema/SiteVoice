@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiteVoice AI — Speak Your Day. Build Your Report.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Barlow:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF5C00;
+    --orange-hot: #FF7A2F;
+    --steel: #0E1117;
+    --steel-mid: #161C27;
+    --steel-light: #1F2836;
+    --slate: #2C3A4F;
+    --wire: #3D4F65;
+    --chalk: #C8D0DC;
+    --white: #EEF1F5;
+    --yellow: #FFB800;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'Barlow', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--steel);
+    color: var(--chalk);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 48px;
+    background: rgba(14,17,23,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--wire);
+  }
+
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 26px;
+    letter-spacing: 2px;
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-logo span { color: var(--orange); }
+
+  .logo-badge {
+    background: var(--orange);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    padding: 2px 6px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--chalk);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--orange); }
+
+  .nav-cta {
+    background: var(--orange);
+    color: #fff !important;
+    padding: 10px 22px;
+    font-size: 12px !important;
+    letter-spacing: 1.5px !important;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: background 0.2s !important;
+  }
+  .nav-cta:hover { background: var(--orange-hot) !important; color: #fff !important; }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 120px 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    right: -200px;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(255,92,0,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Blueprint grid */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(61,79,101,0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(61,79,101,0.15) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+  }
+
+  .hero-left {
+    position: relative;
+    z-index: 2;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,92,0,0.1);
+    border: 1px solid rgba(255,92,0,0.3);
+    padding: 6px 14px;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--orange);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--orange);
+    border-radius: 50%;
+    animation: pulse 1.5s ease infinite;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(72px, 8vw, 120px);
+    line-height: 0.92;
+    letter-spacing: 2px;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+  h1 .accent { color: var(--orange); }
+  h1 .rule {
+    display: block;
+    font-size: 0.55em;
+    color: var(--chalk);
+    opacity: 0.5;
+    letter-spacing: 8px;
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--chalk);
+    opacity: 0.8;
+    max-width: 480px;
+    margin: 28px 0 44px;
+    border-left: 3px solid var(--orange);
+    padding-left: 18px;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--orange);
+    color: #fff;
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 1px;
+    padding: 16px 32px;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+    transition: background 0.2s, transform 0.2s;
+    text-transform: uppercase;
+  }
+  .btn-primary:hover { background: var(--orange-hot); transform: translateY(-2px); }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--chalk);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--wire);
+    transition: color 0.2s, border-color 0.2s;
+    text-transform: uppercase;
+  }
+  .btn-ghost:hover { color: var(--orange); border-color: var(--orange); }
+  .btn-ghost svg { transition: transform 0.2s; }
+  .btn-ghost:hover svg { transform: translateX(4px); }
+
+  .hero-stats {
+    margin-top: 60px;
+    display: flex;
+    gap: 40px;
+  }
+  .stat { border-left: 2px solid var(--wire); padding-left: 16px; }
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 36px;
+    color: var(--orange);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--chalk);
+    opacity: 0.5;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ─── PHONE MOCKUP ─── */
+  .hero-right {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .phone-wrap {
+    position: relative;
+    width: 280px;
+  }
+
+  .phone {
+    background: var(--steel-mid);
+    border: 2px solid var(--wire);
+    border-radius: 36px;
+    padding: 16px;
+    box-shadow:
+      0 0 0 1px rgba(255,92,0,0.1),
+      0 40px 80px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+    position: relative;
+  }
+
+  .phone-notch {
+    width: 90px;
+    height: 24px;
+    background: var(--steel);
+    border-radius: 0 0 14px 14px;
+    margin: 0 auto 12px;
+    position: relative;
+  }
+  .phone-notch::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: var(--wire);
+    border-radius: 50%;
+  }
+
+  .phone-screen {
+    background: var(--steel);
+    border-radius: 24px;
+    padding: 20px 16px;
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow: hidden;
+  }
+
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--chalk);
+    opacity: 0.5;
+  }
+
+  .record-btn-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 0;
+  }
+
+  .record-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 0 0 8px rgba(255,92,0,0.15), 0 0 0 16px rgba(255,92,0,0.07);
+  }
+  .record-btn::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,92,0,0.4);
+    animation: ripple 2s ease infinite;
+  }
+  .record-btn svg { width: 28px; height: 28px; fill: #fff; }
+
+  .rec-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--orange);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .waveform {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 40px;
+    padding: 0 8px;
+  }
+  .wave-bar {
+    width: 3px;
+    background: var(--orange);
+    border-radius: 2px;
+    opacity: 0.6;
+    animation: wave var(--d) ease infinite alternate;
+    height: var(--h);
+  }
+
+  .transcript-box {
+    background: var(--steel-light);
+    border: 1px solid var(--wire);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .transcript-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--orange);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .transcript-text {
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--chalk);
+    opacity: 0.7;
+  }
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 12px;
+    background: var(--orange);
+    margin-left: 2px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+
+  .report-preview {
+    background: var(--steel-light);
+    border: 1px solid var(--wire);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .rp-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 10px;
+  }
+  .rp-label {
+    font-family: var(--font-mono);
+    color: var(--orange);
+    font-size: 9px;
+    white-space: nowrap;
+    padding-top: 1px;
+  }
+  .rp-val { color: var(--chalk); opacity: 0.7; line-height: 1.4; }
+
+  /* Floating accent elements */
+  .float-badge {
+    position: absolute;
+    background: var(--steel-mid);
+    border: 1px solid var(--wire);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .float-badge-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .fb1 { top: -20px; right: -60px; animation: float 3s ease infinite; }
+  .fb2 { bottom: 60px; left: -70px; animation: float 3.5s 0.5s ease infinite; }
+  .fb3 { top: 160px; right: -80px; animation: float 4s 1s ease infinite; }
+
+  /* ─── SECTION BASE ─── */
+  section { padding: 100px 48px; }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--orange);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    max-width: 60px;
+    height: 1px;
+    background: var(--orange);
+    opacity: 0.5;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 5vw, 80px);
+    letter-spacing: 2px;
+    color: var(--white);
+    line-height: 0.95;
+    margin-bottom: 20px;
+  }
+  h2 em { font-style: normal; color: var(--orange); }
+
+  /* ─── HOW IT WORKS ─── */
+  .how {
+    background: var(--steel-mid);
+    border-top: 1px solid var(--wire);
+    border-bottom: 1px solid var(--wire);
+  }
+
+  .how-inner { max-width: 1100px; margin: 0 auto; }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0;
+    margin-top: 64px;
+    border: 1px solid var(--wire);
+  }
+
+  .step {
+    padding: 36px 28px;
+    border-right: 1px solid var(--wire);
+    position: relative;
+    transition: background 0.3s;
+  }
+  .step:last-child { border-right: none; }
+  .step:hover { background: var(--steel-light); }
+
+  .step-num {
+    font-family: var(--font-display);
+    font-size: 72px;
+    color: var(--wire);
+    line-height: 1;
+    margin-bottom: 16px;
+    transition: color 0.3s;
+  }
+  .step:hover .step-num { color: var(--orange); opacity: 0.3; }
+
+  .step-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(255,92,0,0.1);
+    border: 1px solid rgba(255,92,0,0.3);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .step-icon svg { width: 20px; height: 20px; stroke: var(--orange); fill: none; stroke-width: 2; }
+
+  .step-title {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--white);
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .step-desc {
+    font-size: 13px;
+    color: var(--chalk);
+    opacity: 0.6;
+    line-height: 1.6;
+  }
+
+  .step-time {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--orange);
+    opacity: 0.6;
+  }
+
+  /* ─── FEATURES ─── */
+  .features-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .features-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: end;
+    margin-bottom: 64px;
+  }
+
+  .features-intro {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--chalk);
+    opacity: 0.7;
+  }
+
+  .feat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--wire);
+    border: 1px solid var(--wire);
+  }
+
+  .feat-card {
+    background: var(--steel);
+    padding: 36px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  .feat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--orange);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .feat-card:hover { background: var(--steel-light); }
+  .feat-card:hover::before { transform: scaleX(1); }
+
+  .feat-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 20px;
+    color: var(--orange);
+  }
+
+  .feat-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--white);
+    margin-bottom: 10px;
+    letter-spacing: 0.3px;
+  }
+
+  .feat-desc {
+    font-size: 13px;
+    color: var(--chalk);
+    opacity: 0.6;
+    line-height: 1.65;
+  }
+
+  .feat-tag {
+    display: inline-block;
+    margin-top: 16px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--orange);
+    background: rgba(255,92,0,0.1);
+    padding: 3px 8px;
+    letter-spacing: 1px;
+  }
+
+  /* ─── PRICING ─── */
+  .pricing { background: var(--steel-mid); border-top: 1px solid var(--wire); border-bottom: 1px solid var(--wire); }
+  .pricing-inner { max-width: 900px; margin: 0 auto; }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 64px;
+  }
+
+  .plan {
+    background: var(--steel);
+    border: 1px solid var(--wire);
+    padding: 44px 36px;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+  .plan:hover { border-color: var(--orange); }
+
+  .plan-featured {
+    border-color: var(--orange) !important;
+    background: var(--steel-light);
+  }
+  .plan-featured::before {
+    content: 'MOST POPULAR';
+    position: absolute;
+    top: -1px;
+    right: 32px;
+    background: var(--orange);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+  }
+
+  .plan-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--orange);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .plan-price {
+    font-family: var(--font-display);
+    font-size: 72px;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .plan-price sup { font-size: 32px; vertical-align: top; margin-top: 12px; }
+  .plan-price sub { font-size: 18px; opacity: 0.5; font-family: var(--font-body); font-weight: 400; }
+
+  .plan-desc {
+    font-size: 13px;
+    color: var(--chalk);
+    opacity: 0.6;
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  .plan-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+  .plan-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--chalk);
+    opacity: 0.8;
+  }
+  .plan-features li::before {
+    content: '→';
+    color: var(--orange);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .plan-btn {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .plan-btn-outline {
+    background: transparent;
+    border: 1px solid var(--wire);
+    color: var(--chalk);
+  }
+  .plan-btn-outline:hover { border-color: var(--orange); color: var(--orange); }
+  .plan-btn-fill {
+    background: var(--orange);
+    color: #fff;
+  }
+  .plan-btn-fill:hover { background: var(--orange-hot); }
+
+  /* ─── SOCIAL PROOF STRIP ─── */
+  .social-strip {
+    padding: 48px;
+    border-top: 1px solid var(--wire);
+    overflow: hidden;
+    position: relative;
+  }
+  .social-strip-label {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--chalk);
+    opacity: 0.3;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .logos-row {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .fake-logo {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--chalk);
+    opacity: 0.15;
+    text-transform: uppercase;
+    filter: blur(0.3px);
+  }
+
+  /* ─── TESTIMONIAL ─── */
+  .testimonial-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 100px 48px;
+    text-align: center;
+  }
+
+  .quote {
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.4;
+    margin-bottom: 32px;
+    font-style: italic;
+    position: relative;
+  }
+  .quote::before {
+    content: '"';
+    font-family: var(--font-display);
+    font-size: 200px;
+    color: var(--orange);
+    opacity: 0.08;
+    position: absolute;
+    top: -60px;
+    left: -20px;
+    line-height: 1;
+  }
+
+  .quote-author {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+  .author-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--slate);
+    border: 2px solid var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--orange);
+  }
+  .author-info { text-align: left; }
+  .author-name { font-weight: 700; font-size: 15px; color: var(--white); }
+  .author-title { font-family: var(--font-mono); font-size: 11px; color: var(--chalk); opacity: 0.5; }
+
+  /* ─── CTA SECTION ─── */
+  .cta-section {
+    background: var(--orange);
+    padding: 100px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-section::before {
+    content: 'SITEVOICE';
+    font-family: var(--font-display);
+    font-size: 240px;
+    color: rgba(0,0,0,0.08);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    letter-spacing: 20px;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .cta-section h2 { color: #fff; font-size: clamp(48px, 6vw, 96px); }
+  .cta-section h2 em { color: rgba(255,255,255,0.4); }
+  .cta-sub {
+    font-size: 18px;
+    color: rgba(255,255,255,0.8);
+    max-width: 500px;
+    margin: 20px auto 44px;
+    line-height: 1.6;
+  }
+  .cta-btns { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+
+  .btn-white {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    color: var(--orange);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 1px;
+    padding: 16px 36px;
+    text-transform: uppercase;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .btn-white:hover { opacity: 0.92; transform: translateY(-2px); }
+
+  .btn-dark {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,0,0,0.2);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 1px;
+    padding: 16px 36px;
+    text-transform: uppercase;
+    border: 1px solid rgba(255,255,255,0.3);
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+    transition: background 0.2s;
+  }
+  .btn-dark:hover { background: rgba(0,0,0,0.35); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 48px;
+    border-top: 1px solid var(--wire);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: gap;
+  }
+  .footer-logo {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--chalk);
+    opacity: 0.4;
+  }
+  .footer-logo span { color: var(--orange); opacity: 1; }
+  .footer-copy {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--chalk);
+    opacity: 0.3;
+    letter-spacing: 1px;
+  }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a {
+    font-size: 12px;
+    color: var(--chalk);
+    opacity: 0.4;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .footer-links a:hover { opacity: 0.8; }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  @keyframes ripple {
+    0%   { transform: scale(1);   opacity: 0.8; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  @keyframes wave {
+    from { transform: scaleY(0.3); }
+    to   { transform: scaleY(1); }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px);   }
+    50%       { transform: translateY(-8px); }
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 100px 20px 60px; gap: 60px; }
+    .hero-right { display: none; }
+    section { padding: 60px 20px; }
+    .features-header { grid-template-columns: 1fr; gap: 20px; }
+    .feat-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .steps-grid { grid-template-columns: 1fr 1fr; }
+    .step { border-right: none; border-bottom: 1px solid var(--wire); }
+    footer { flex-direction: column; gap: 20px; text-align: center; }
+    .social-strip { padding: 40px 20px; }
+    .testimonial-wrap { padding: 60px 20px; }
+    .cta-section { padding: 60px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <div class="nav-logo">
+    Site<span>Voice</span>&nbsp;AI
+    <span class="logo-badge">Beta</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#" class="nav-cta">Get Early Access</a></li>
+  </ul>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">AI-Powered Field Reporting</div>
+    <h1>
+      SPEAK<br>
+      YOUR <span class="accent">DAY.</span>
+      <span class="rule">BUILD YOUR REPORT.</span>
+    </h1>
+    <p class="hero-sub">
+      Foremen dictate their 90-second site walkthrough. SiteVoice AI converts it into a professional daily log — in under 30 seconds.
+    </p>
+    <div class="hero-actions">
+      <a href="#pricing" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+        Start Free Trial
+      </a>
+      <a href="#how" class="btn-ghost">
+        See How It Works
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">75%</div>
+        <div class="stat-label">Time Saved</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">90s</div>
+        <div class="stat-label">To Dictate</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">30s</div>
+        <div class="stat-label">To Report</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="phone-wrap">
+
+      <!-- Floating badges -->
+      <div class="float-badge fb1">
+        <div class="float-badge-dot" style="background:#22c55e"></div>
+        <span style="font-size:12px; color:var(--chalk); font-family:var(--font-mono);">Report Generated</span>
+      </div>
+      <div class="float-badge fb2">
+        <div class="float-badge-dot" style="background:var(--orange)"></div>
+        <span style="font-size:12px; color:var(--chalk); font-family:var(--font-mono);">Sent to Procore ↗</span>
+      </div>
+      <div class="float-badge fb3" style="flex-direction:column; align-items:flex-start; gap:4px;">
+        <span style="font-size:9px; font-family:var(--font-mono); color:var(--orange); letter-spacing:1px;">LABOR</span>
+        <span style="font-size:11px; color:var(--chalk);">12 workers on site</span>
+      </div>
+
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="app-header">
+            <span>SiteVoice AI</span>
+            <span>4:02 PM</span>
+          </div>
+
+          <div class="record-btn-wrap">
+            <div class="record-btn">
+              <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="white" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="white" stroke-width="2" fill="none"/></svg>
+            </div>
+            <div class="rec-label">● Recording 0:47</div>
+          </div>
+
+          <div class="waveform">
+            <div class="wave-bar" style="--h:8px;  --d:0.4s"></div>
+            <div class="wave-bar" style="--h:20px; --d:0.5s"></div>
+            <div class="wave-bar" style="--h:12px; --d:0.3s"></div>
+            <div class="wave-bar" style="--h:32px; --d:0.6s"></div>
+            <div class="wave-bar" style="--h:18px; --d:0.45s"></div>
+            <div class="wave-bar" style="--h:28px; --d:0.35s"></div>
+            <div class="wave-bar" style="--h:10px; --d:0.55s"></div>
+            <div class="wave-bar" style="--h:36px; --d:0.42s"></div>
+            <div class="wave-bar" style="--h:22px; --d:0.38s"></div>
+            <div class="wave-bar" style="--h:14px; --d:0.5s"></div>
+            <div class="wave-bar" style="--h:30px; --d:0.46s"></div>
+            <div class="wave-bar" style="--h:8px;  --d:0.4s"></div>
+          </div>
+
+          <div class="transcript-box">
+            <div class="transcript-label">Live Transcript</div>
+            <div class="transcript-text">
+              ...north wall framing is about 80% complete, Crane 2 was down till noon, Martinez crew did rebar on Level 3...<span class="cursor"></span>
+            </div>
+          </div>
+
+          <div class="report-preview">
+            <div class="rp-row">
+              <div class="rp-label">LABOR</div>
+              <div class="rp-val">12 workers · Martinez crew (rebar, Lvl 3)</div>
+            </div>
+            <div class="rp-row">
+              <div class="rp-label">PROGRESS</div>
+              <div class="rp-val">N. wall framing 80% complete</div>
+            </div>
+            <div class="rp-row">
+              <div class="rp-label">EQUIP.</div>
+              <div class="rp-val">Crane 2 offline until 12:00 PM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SOCIAL PROOF ─── -->
+<div class="social-strip">
+  <div class="social-strip-label">Trusted by field teams at</div>
+  <div class="logos-row">
+    <div class="fake-logo">Turner</div>
+    <div class="fake-logo">Skanska</div>
+    <div class="fake-logo">Hensel Phelps</div>
+    <div class="fake-logo">McCarthy</div>
+    <div class="fake-logo">DPR</div>
+  </div>
+</div>
+
+<!-- ─── HOW IT WORKS ─── -->
+<section class="how" id="how">
+  <div class="how-inner">
+    <div class="section-label">The Flow</div>
+    <h2>FROM JOBSITE<br>TO <em>INBOX</em></h2>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-time">4:00 PM</div>
+        <div class="step-num">01</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+        </div>
+        <div class="step-title">Tap & Talk</div>
+        <div class="step-desc">Open the app. Hit record. Walk the site for 90 seconds and narrate your day like you're calling your PM.</div>
+      </div>
+      <div class="step">
+        <div class="step-time">4:02 PM</div>
+        <div class="step-num">02</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="step-title">AI Transcribes</div>
+        <div class="step-desc">Whisper AI strips the noise and nails construction jargon — rebar, HVAC, BIM, pour schedules. Bilingual support included.</div>
+      </div>
+      <div class="step">
+        <div class="step-time">4:02 PM</div>
+        <div class="step-num">03</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <div class="step-title">Structured Log</div>
+        <div class="step-desc">Claude AI categorizes everything: labor, progress, equipment, delays, safety — into the standard daily log format.</div>
+      </div>
+      <div class="step">
+        <div class="step-time">4:03 PM</div>
+        <div class="step-num">04</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <div class="step-title">Quick Review</div>
+        <div class="step-desc">Foreman reads the AI draft in 20 seconds, makes a tweak or two, and taps Submit. No typing. No re-reading.</div>
+      </div>
+      <div class="step" style="border-right:none;">
+        <div class="step-time">4:04 PM</div>
+        <div class="step-num">05</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.6 19.79 19.79 0 0 1 1.61 5a2 2 0 0 1 1.99-2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.5a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.1-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 18c.005.16.005.32 0 .48z"/></svg>
+        </div>
+        <div class="step-title">PM Gets the PDF</div>
+        <div class="step-desc">A branded PDF lands in the PM's inbox. Data pushes to Procore or Autodesk automatically. Done.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FEATURES ─── -->
+<section id="features">
+  <div class="features-inner">
+    <div class="features-header">
+      <div>
+        <div class="section-label">Capabilities</div>
+        <h2>BUILT FOR<br>THE <em>SITE</em></h2>
+      </div>
+      <p class="features-intro">
+        Every feature was designed for a foreman standing in a muddy basement with gloves on — not a product manager in a conference room.
+      </p>
+    </div>
+
+    <div class="feat-grid">
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        </svg>
+        <div class="feat-title">Noise-Cancelling Transcription</div>
+        <div class="feat-desc">Record over crane noise, concrete pours, and wind. Whisper AI extracts the voice and the meaning.</div>
+        <span class="feat-tag">Whisper AI</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <div class="feat-title">Bilingual Support</div>
+        <div class="feat-desc">Speak in Spanish, receive an English report. Critical for multilingual crews and GC documentation.</div>
+        <span class="feat-tag">ES → EN</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+        </svg>
+        <div class="feat-title">AI-Structured Log</div>
+        <div class="feat-desc">Labor, progress, equipment, materials, safety, delays — automatically separated into the right buckets.</div>
+        <span class="feat-tag">Claude AI</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <div class="feat-title">Photo Auto-Captioning</div>
+        <div class="feat-desc">Snap a photo on site. AI reads the audio context and captions it — "Crack in east footing, per supervisor's note."</div>
+        <span class="feat-tag">Vision AI</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <div class="feat-title">Approval Workflow</div>
+        <div class="feat-desc">Every report gets a human review before it's locked. Edit, annotate, and submit in under a minute.</div>
+        <span class="feat-tag">Foreman → PM</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M18 20V10M12 20V4M6 20v-6"/>
+        </svg>
+        <div class="feat-title">Procore & ACC Sync</div>
+        <div class="feat-desc">Push daily logs directly into Procore or Autodesk Construction Cloud. No copy-paste. No double entry.</div>
+        <span class="feat-tag">Enterprise</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4zM8 2v16M16 6v16"/>
+        </svg>
+        <div class="feat-title">Offline-First Mode</div>
+        <div class="feat-desc">No LTE in the basement? Record anyway. The app queues everything and syncs the moment you're back in range.</div>
+        <span class="feat-tag">Always On</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <div class="feat-title">Branded PDF Reports</div>
+        <div class="feat-desc">Professional layouts with your company logo, project number, and colors. Defensible in court.</div>
+        <span class="feat-tag">Auto-Generated</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <div class="feat-title">Claim-Ready Records</div>
+        <div class="feat-desc">Every report is timestamped, signed, and stored. One delay claim prevented = 1,667 months of subscription costs covered.</div>
+        <span class="feat-tag">Legal Defense</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TESTIMONIAL ─── -->
+<div class="testimonial-wrap">
+  <p class="quote">
+    I used to spend 45 minutes at the end of every shift. Now I talk for 90 seconds while I walk to my truck. The report is ready before I get home.
+  </p>
+  <div class="quote-author">
+    <div class="author-avatar">R</div>
+    <div class="author-info">
+      <div class="author-name">Ramiro V.</div>
+      <div class="author-title">Senior Foreman · Commercial GC, Phoenix AZ</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PRICING ─── -->
+<section class="pricing" id="pricing">
+  <div class="pricing-inner">
+    <div class="section-label">Pricing</div>
+    <h2>NO NONSENSE<br><em>PRICING</em></h2>
+    <div class="pricing-grid">
+      <div class="plan">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price"><sup>$</sup>29<sub>/mo per foreman</sub></div>
+        <p class="plan-desc">Everything a foreman needs to report their day in 2 minutes flat.</p>
+        <ul class="plan-features">
+          <li>Unlimited daily reports</li>
+          <li>Noise-cancelling transcription</li>
+          <li>AI structuring (6 categories)</li>
+          <li>Photo upload & captioning</li>
+          <li>PDF export</li>
+          <li>Offline mode</li>
+          <li>Bilingual (EN/ES)</li>
+        </ul>
+        <a href="#" class="plan-btn plan-btn-outline">Start 14-Day Free Trial</a>
+      </div>
+      <div class="plan plan-featured">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price"><sup>$</sup>500<sub>/mo per project</sub></div>
+        <p class="plan-desc">Unlimited users, full integration stack, and your brand on every page.</p>
+        <ul class="plan-features">
+          <li>Everything in Pro</li>
+          <li>Unlimited users per project</li>
+          <li>Custom PDF branding</li>
+          <li>Procore integration</li>
+          <li>Autodesk Construction Cloud</li>
+          <li>Slack / email push</li>
+          <li>PM dashboard & analytics</li>
+          <li>Dedicated support</li>
+        </ul>
+        <a href="#" class="plan-btn plan-btn-fill">Book a Demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FINAL CTA ─── -->
+<section class="cta-section">
+  <h2>STOP<br><em>TYPING.</em></h2>
+  <p class="cta-sub">Your crew worked a 10-hour shift. You shouldn't spend the last hour writing it up.</p>
+  <div class="cta-btns">
+    <a href="#" class="btn-white">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+      Start Free — No Card Needed
+    </a>
+    <a href="#" class="btn-dark">Talk to Sales</a>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-logo">Site<span>Voice</span> AI</div>
+  <div class="footer-copy">© 2025 SiteVoice AI · Built for the field.</div>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -70,11 +70,16 @@ before the next begins. Do not start a slice until its dependencies are marked c
      Swoosh email (daily log PDF to PM), push notification on report ready,
      DailyReminderWorker (Oban cron).
 
-08 → Integrations
+08 → LiveView Screens
+     Phoenix LiveView browser UI for all core flows: dashboard, project management,
+     recording upload, real-time pipeline progress, log review, PDF download, PM dashboard.
+     Allows full end-to-end testing without the mobile app.
+
+09 → Integrations
      Integration resource (tenanted), Procore adapter,
      IntegrationEvent resource, post-submission dispatch.
 
-09 → Mobile (React Native)
+10 → Mobile (React Native)
      All screens (Home, Recording, Processing, Review, Success),
      dual audio strategy (@rn-voice + expo-av), offline queue (MMKV + BackgroundFetch),
      Phoenix Channel client, JWT storage and attachment.
@@ -94,8 +99,9 @@ Update this table as slices are completed:
 | 05    | PDF Generation | ✅ Complete    |
 | 06    | Real-time      | ✅ Complete    |
 | 07    | Notifications  | ✅ Complete    |
-| 08    | Integrations   | ⬜ Not started |
-| 09    | Mobile         | ⬜ Not started |
+| 08    | LiveView       | ⬜ Not started |
+| 09    | Integrations   | ⬜ Not started |
+| 10    | Mobile         | ⬜ Not started |
 
 ---
 
