@@ -23,6 +23,14 @@ end
 config :sitevoice, SitevoiceWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
+if System.get_env("OPENAI_API_KEY") do
+  config :sitevoice, :openai_api_key, System.get_env("OPENAI_API_KEY")
+end
+
+if System.get_env("ANTHROPIC_API_KEY") do
+  config :sitevoice, :anthropic_api_key, System.get_env("ANTHROPIC_API_KEY")
+end
+
 if System.get_env("AWS_ACCESS_KEY_ID") do
   endpoint_url = System.get_env("AWS_ENDPOINT_URL_S3", "https://fly.storage.tigris.dev")
   uri = URI.parse(endpoint_url)

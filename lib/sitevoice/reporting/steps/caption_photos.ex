@@ -22,10 +22,8 @@ defmodule Sitevoice.Steps.CaptionPhotos do
           caption = generate_caption(Base.encode64(binary), transcript)
           category = infer_category(caption)
 
-          Logger.debug("CaptionPhotos applying caption",
-            photo_id: photo.id,
-            category: category,
-            caption_preview: String.slice(caption, 0, 80)
+          Logger.debug(
+            "CaptionPhotos applying caption — photo=#{photo.id} category=#{category} preview=#{String.slice(caption, 0, 80)}"
           )
 
           Ash.update!(photo, %{caption: caption, category: category},
@@ -35,10 +33,8 @@ defmodule Sitevoice.Steps.CaptionPhotos do
           )
         else
           {:error, fetch_err} ->
-            Logger.warning("CaptionPhotos failed to fetch photo, skipping",
-              photo_id: photo.id,
-              storage_key: photo.storage_key,
-              reason: inspect(fetch_err)
+            Logger.warning(
+              "CaptionPhotos skipping photo=#{photo.id} key=#{photo.storage_key} — #{inspect(fetch_err)}"
             )
 
             photo
@@ -86,18 +82,12 @@ defmodule Sitevoice.Steps.CaptionPhotos do
             String.trim(t)
 
           {:ok, %{status: s, body: b}} ->
-            Logger.warning("CaptionPhotos Claude API error, using fallback caption",
-              status: s,
-              body: inspect(b)
-            )
-
+            body_preview = b |> inspect() |> String.slice(0, 300)
+            Logger.warning("CaptionPhotos Claude API error status=#{s} body=#{body_preview} — using fallback")
             "Site photo"
 
           {:error, r} ->
-            Logger.warning("CaptionPhotos Claude request failed, using fallback caption",
-              reason: inspect(r)
-            )
-
+            Logger.warning("CaptionPhotos Claude request failed — #{inspect(r)} — using fallback")
             "Site photo"
         end
 

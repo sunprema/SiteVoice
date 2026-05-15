@@ -26,14 +26,15 @@ defmodule Sitevoice.Workers.AudioProcessor do
         :ok
 
       {:error, reason} ->
-        Logger.error("AudioProcessor pipeline failed", reason: inspect(reason))
+        error_summary = format_pipeline_error(reason)
+        Logger.error("AudioProcessor pipeline failed: #{error_summary}")
         mark_failed(log_id, org_id, reason)
         {:error, reason}
     end
   end
 
   defp mark_failed(log_id, org_id, reason) do
-    Logger.warning("AudioProcessor marking log as failed", reason: inspect(reason))
+    Logger.warning("AudioProcessor marking log as failed: #{format_pipeline_error(reason)}")
 
     case Ash.get(Sitevoice.Reporting.DailyLog, log_id, authorize?: false, tenant: org_id) do
       {:ok, log} ->
@@ -41,9 +42,24 @@ defmodule Sitevoice.Workers.AudioProcessor do
         Logger.info("AudioProcessor log marked as failed in database")
 
       {:error, fetch_err} ->
-        Logger.error("AudioProcessor could not fetch log to mark as failed",
-          fetch_error: inspect(fetch_err)
+        Logger.error(
+          "AudioProcessor could not fetch log to mark as failed: #{inspect(fetch_err)}"
         )
     end
   end
+
+  defp format_pipeline_error(errors) when is_list(errors) do
+    Enum.map_join(errors, "; ", &format_one_error/1)
+  end
+
+  defp format_pipeline_error(error), do: format_one_error(error)
+
+  defp format_one_error(%{step: step, errors: errs}) when is_list(errs) do
+    "step=#{inspect(step)} errors=[#{Enum.map_join(errs, ", ", &format_one_error/1)}]"
+  end
+
+  defp format_one_error(%{message: msg}), do: msg
+  defp format_one_error(%{reason: r}), do: inspect(r)
+  defp format_one_error(e) when is_exception(e), do: Exception.message(e)
+  defp format_one_error(e), do: inspect(e)
 end

@@ -20,8 +20,14 @@ defmodule Sitevoice.Steps.StructureWithClaude do
   """
 
   def run(%{transcript: transcript}, _, _) do
+    with :ok <- check_api_key() do
+      do_run(transcript)
+    end
+  end
+
+  defp do_run(transcript) do
     transcript_chars = String.length(transcript)
-    Logger.info("Claude structuring starting", transcript_chars: transcript_chars)
+    Logger.info("Claude structuring starting — #{transcript_chars} chars")
 
     :telemetry.span(
       [:sitevoice, :claude, :structure],
@@ -69,23 +75,37 @@ defmodule Sitevoice.Steps.StructureWithClaude do
         {:ok, structured}
 
       {:error, decode_err} ->
-        Logger.error("Claude returned invalid JSON",
-          raw_response: String.slice(t, 0, 500),
-          decode_error: inspect(decode_err)
-        )
-
-        {:error, "Invalid JSON from Claude: #{t}"}
+        raw_preview = String.slice(t, 0, 500)
+        Logger.error("Claude returned invalid JSON — #{inspect(decode_err)} raw=#{raw_preview}")
+        {:error, "Invalid JSON from Claude: #{inspect(decode_err)}"}
     end
   end
 
   defp parse_response({:ok, %{status: s, body: b}}) do
-    Logger.error("Claude API returned error status", status: s, body: inspect(b))
-    {:error, "Claude #{s}: #{inspect(b)}"}
+    body_preview = b |> inspect() |> String.slice(0, 300)
+    Logger.error("Claude API error — status=#{s} body=#{body_preview}")
+    {:error, "Claude HTTP #{s}: #{body_preview}"}
+  end
+
+  defp parse_response({:error, %{reason: reason}}) do
+    Logger.error("Claude request failed — #{inspect(reason)}")
+    {:error, "Claude connection error: #{inspect(reason)}"}
   end
 
   defp parse_response({:error, r}) do
-    Logger.error("Claude HTTP request failed", reason: inspect(r))
+    Logger.error("Claude request failed — #{inspect(r)}")
     {:error, r}
+  end
+
+  defp check_api_key do
+    case Application.fetch_env(:sitevoice, :anthropic_api_key) do
+      {:ok, key} when is_binary(key) and key != "" ->
+        :ok
+
+      _ ->
+        Logger.error("Claude step cannot run — :anthropic_api_key not configured (set ANTHROPIC_API_KEY)")
+        {:error, "Anthropic API key not configured"}
+    end
   end
 
   defp api_key, do: Application.fetch_env!(:sitevoice, :anthropic_api_key)

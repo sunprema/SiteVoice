@@ -157,6 +157,7 @@ defmodule Sitevoice.Reporting.DailyLog do
     policy action(:submit_recording) do
       authorize_if actor_attribute_equals(:role, :foreman)
       authorize_if actor_attribute_equals(:role, :pm)
+      authorize_if actor_attribute_equals(:role, :org_admin)
     end
 
     policy action([:apply_transcript, :apply_structure, :mark_failed, :undo_apply_transcript, :undo_apply_structure]) do

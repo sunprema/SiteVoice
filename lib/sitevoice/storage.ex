@@ -40,7 +40,7 @@ defmodule Sitevoice.Storage do
         {:ok, key}
 
       {:error, reason} ->
-        Logger.error("Storage put_object failed", bucket: bucket, key: key, reason: inspect(reason))
+        Logger.error("Storage put_object failed — bucket=#{bucket} key=#{key} reason=#{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -68,11 +68,8 @@ defmodule Sitevoice.Storage do
         {:ok, key}
 
       {:error, reason} ->
-        Logger.error("Storage store_typed failed",
-          bucket: bucket,
-          key: key,
-          content_type: content_type,
-          reason: inspect(reason)
+        Logger.error(
+          "Storage store_typed failed — bucket=#{bucket} key=#{key} content_type=#{content_type} reason=#{inspect(reason)}"
         )
 
         {:error, reason}
@@ -86,7 +83,7 @@ defmodule Sitevoice.Storage do
       String.ends_with?(key, ".jpg") -> fetch(@photo_bucket, key)
       String.ends_with?(key, ".pdf") -> fetch(@pdf_bucket, key)
       true ->
-        Logger.error("Storage cannot determine bucket for key", key: key)
+        Logger.error("Storage cannot determine bucket for key=#{key}")
         {:error, "Cannot determine bucket for key: #{key}"}
     end
   end
@@ -109,7 +106,7 @@ defmodule Sitevoice.Storage do
         {:ok, body}
 
       {:error, reason} ->
-        Logger.error("Storage fetch failed", bucket: bucket, key: key, reason: inspect(reason))
+        Logger.error("Storage fetch failed — bucket=#{bucket} key=#{key} reason=#{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -125,10 +122,8 @@ defmodule Sitevoice.Storage do
         result
 
       {:error, reason} = result ->
-        Logger.error("Storage presigned URL generation failed",
-          bucket: bucket,
-          key: key,
-          reason: inspect(reason)
+        Logger.error(
+          "Storage presigned URL failed — bucket=#{bucket} key=#{key} reason=#{inspect(reason)}"
         )
 
         result

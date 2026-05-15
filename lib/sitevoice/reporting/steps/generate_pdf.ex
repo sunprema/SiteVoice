@@ -50,12 +50,8 @@ defmodule Sitevoice.Steps.GeneratePdf do
             {:ok, binary}
 
           {:error, reason} ->
-            Logger.error("GeneratePdf compilation failed",
-              log_id: log.id,
-              reason: inspect(reason)
-            )
-
-            {:error, "PDF failed: #{reason}"}
+            Logger.error("GeneratePdf compilation failed — log=#{log.id} reason=#{inspect(reason)}")
+            {:error, "PDF compilation failed: #{inspect(reason)}"}
         end
 
       {result, %{}}

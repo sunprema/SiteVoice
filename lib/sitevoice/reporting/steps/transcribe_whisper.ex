@@ -14,7 +14,13 @@ defmodule Sitevoice.Steps.TranscribeWhisper do
     language = if lang == :es, do: "es", else: "en"
     audio_bytes = byte_size(audio_binary)
 
-    Logger.info("Whisper transcription starting", audio_bytes: audio_bytes, language: language)
+    with :ok <- check_api_key(:openai) do
+      do_run(audio_binary, audio_bytes, language)
+    end
+  end
+
+  defp do_run(audio_binary, audio_bytes, language) do
+    Logger.info("Whisper transcription starting — #{audio_bytes} bytes, lang=#{language}")
 
     :telemetry.span(
       [:sitevoice, :whisper, :transcribe],
@@ -37,18 +43,20 @@ defmodule Sitevoice.Steps.TranscribeWhisper do
           )
           |> case do
             {:ok, %{status: 200, body: %{"text" => text}}} ->
-              Logger.info("Whisper transcription succeeded",
-                transcript_chars: String.length(text)
-              )
-
+              Logger.info("Whisper transcription succeeded — #{String.length(text)} chars")
               {:ok, text}
 
             {:ok, %{status: s, body: b}} ->
-              Logger.error("Whisper API returned error status", status: s, body: inspect(b))
-              {:error, "Whisper #{s}: #{inspect(b)}"}
+              body_preview = b |> inspect() |> String.slice(0, 300)
+              Logger.error("Whisper API error — status=#{s} body=#{body_preview}")
+              {:error, "Whisper HTTP #{s}: #{body_preview}"}
+
+            {:error, %{reason: reason}} ->
+              Logger.error("Whisper request failed — #{inspect(reason)}")
+              {:error, "Whisper connection error: #{inspect(reason)}"}
 
             {:error, r} ->
-              Logger.error("Whisper HTTP request failed", reason: inspect(r))
+              Logger.error("Whisper request failed — #{inspect(r)}")
               {:error, r}
           end
 
@@ -58,6 +66,17 @@ defmodule Sitevoice.Steps.TranscribeWhisper do
   end
 
   def compensate(_, _, _, _), do: :ok
+
+  defp check_api_key(:openai) do
+    case Application.fetch_env(:sitevoice, :openai_api_key) do
+      {:ok, key} when is_binary(key) and key != "" ->
+        :ok
+
+      _ ->
+        Logger.error("Whisper step cannot run — :openai_api_key not configured (set OPENAI_API_KEY)")
+        {:error, "OpenAI API key not configured"}
+    end
+  end
 
   defp api_key, do: Application.fetch_env!(:sitevoice, :openai_api_key)
 end
