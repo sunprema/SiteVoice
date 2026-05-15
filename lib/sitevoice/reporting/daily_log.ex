@@ -74,6 +74,11 @@ defmodule Sitevoice.Reporting.DailyLog do
 
       argument :project_id, :uuid, allow_nil?: false
 
+      # Upsert so a foreman can retry after a failed pipeline on the same day.
+      upsert? true
+      upsert_identity :unique_log_per_day
+      upsert_fields [:audio_key, :audio_duration, :weather, :status, :updated_at]
+
       change set_attribute(:organization_id, actor(:organization_id))
       change set_attribute(:foreman_id, actor(:id))
       change set_attribute(:status, :pending)
