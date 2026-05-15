@@ -1,12 +1,32 @@
 defmodule Sitevoice.Steps.CaptionPhotos do
   use Reactor.Step
 
+  require Logger
+
   def run(%{photo_keys: photos, transcript: transcript, organization_id: org_id}, _, _) do
+    photo_count = length(photos)
+    Logger.info("CaptionPhotos starting", photo_count: photo_count)
+
     updated =
-      Enum.map(photos, fn photo ->
+      photos
+      |> Enum.with_index(1)
+      |> Enum.map(fn {photo, idx} ->
+        Logger.debug("CaptionPhotos fetching photo",
+          photo_id: photo.id,
+          storage_key: photo.storage_key,
+          index: idx,
+          of: photo_count
+        )
+
         with {:ok, binary} <- Sitevoice.Storage.fetch(photo.storage_key) do
           caption = generate_caption(Base.encode64(binary), transcript)
           category = infer_category(caption)
+
+          Logger.debug("CaptionPhotos applying caption",
+            photo_id: photo.id,
+            category: category,
+            caption_preview: String.slice(caption, 0, 80)
+          )
 
           Ash.update!(photo, %{caption: caption, category: category},
             action: :apply_caption,
@@ -14,10 +34,18 @@ defmodule Sitevoice.Steps.CaptionPhotos do
             tenant: org_id
           )
         else
-          {:error, _} -> photo
+          {:error, fetch_err} ->
+            Logger.warning("CaptionPhotos failed to fetch photo, skipping",
+              photo_id: photo.id,
+              storage_key: photo.storage_key,
+              reason: inspect(fetch_err)
+            )
+
+            photo
         end
       end)
 
+    Logger.info("CaptionPhotos completed", photo_count: photo_count)
     {:ok, updated}
   end
 
@@ -44,17 +72,37 @@ defmodule Sitevoice.Steps.CaptionPhotos do
       ]
     }
 
-    case Req.post(
-           "https://api.anthropic.com/v1/messages",
-           [
-             json: body,
-             headers: [{"x-api-key", api_key()}, {"anthropic-version", "2023-06-01"}],
-             receive_timeout: 30_000
-           ] ++ Application.get_env(:sitevoice, :anthropic_req_options, [])
-         ) do
-      {:ok, %{status: 200, body: %{"content" => [%{"text" => t} | _]}}} -> String.trim(t)
-      _ -> "Site photo"
-    end
+    :telemetry.span([:sitevoice, :claude, :caption], %{}, fn ->
+      result =
+        case Req.post(
+               "https://api.anthropic.com/v1/messages",
+               [
+                 json: body,
+                 headers: [{"x-api-key", api_key()}, {"anthropic-version", "2023-06-01"}],
+                 receive_timeout: 30_000
+               ] ++ Application.get_env(:sitevoice, :anthropic_req_options, [])
+             ) do
+          {:ok, %{status: 200, body: %{"content" => [%{"text" => t} | _]}}} ->
+            String.trim(t)
+
+          {:ok, %{status: s, body: b}} ->
+            Logger.warning("CaptionPhotos Claude API error, using fallback caption",
+              status: s,
+              body: inspect(b)
+            )
+
+            "Site photo"
+
+          {:error, r} ->
+            Logger.warning("CaptionPhotos Claude request failed, using fallback caption",
+              reason: inspect(r)
+            )
+
+            "Site photo"
+        end
+
+      {result, %{}}
+    end)
   end
 
   defp infer_category(caption) do

@@ -1,6 +1,8 @@
 defmodule Sitevoice.Storage do
   @moduledoc false
 
+  require Logger
+
   @audio_bucket "sitevoice-audio"
   @photo_bucket "sitevoice-photos"
   @pdf_bucket "sitevoice-pdfs"
@@ -16,29 +18,76 @@ defmodule Sitevoice.Storage do
     "#{org_id}/#{project_id}/#{d.year}/#{d.month}/#{log_id}.pdf"
   end
 
-  def store_audio(key, binary), do: store_typed(@audio_bucket, key, binary, "audio/m4a")
-  def store_photo(key, binary), do: store_typed(@photo_bucket, key, binary, "image/jpeg")
-  def store_pdf(key, binary), do: store_typed(@pdf_bucket, key, binary, "application/pdf")
+  def store_audio(key, binary) do
+    Logger.debug("Storage storing audio", key: key, bytes: byte_size(binary))
+    result = store_typed(@audio_bucket, key, binary, "audio/m4a")
+    log_store_result(result, key)
+    result
+  end
+
+  def store_photo(key, binary) do
+    Logger.debug("Storage storing photo", key: key, bytes: byte_size(binary))
+    result = store_typed(@photo_bucket, key, binary, "image/jpeg")
+    log_store_result(result, key)
+    result
+  end
+
+  def store_pdf(key, binary) do
+    Logger.debug("Storage storing PDF", key: key, bytes: byte_size(binary))
+    result = store_typed(@pdf_bucket, key, binary, "application/pdf")
+    log_store_result(result, key)
+    result
+  end
 
   @spec store(bucket :: String.t(), key :: String.t(), body :: binary()) ::
           {:ok, String.t()} | {:error, term()}
   def store(bucket, key, body) do
+    Logger.debug("Storage putting object", bucket: bucket, key: key, bytes: byte_size(body))
+
     bucket
     |> ExAws.S3.put_object(key, body)
     |> ExAws.request()
     |> case do
-      {:ok, _} -> {:ok, key}
-      {:error, reason} -> {:error, reason}
+      {:ok, _} ->
+        :telemetry.execute([:sitevoice, :storage, :store], %{bytes: byte_size(body)}, %{
+          bucket: bucket,
+          key: key
+        })
+
+        {:ok, key}
+
+      {:error, reason} ->
+        Logger.error("Storage put_object failed", bucket: bucket, key: key, reason: inspect(reason))
+        {:error, reason}
     end
   end
 
   defp store_typed(bucket, key, binary, content_type) do
     bucket
-    |> ExAws.S3.put_object(key, binary, content_type: content_type, server_side_encryption: "AES256")
+    |> ExAws.S3.put_object(key, binary,
+      content_type: content_type,
+      server_side_encryption: "AES256"
+    )
     |> ExAws.request()
     |> case do
-      {:ok, _} -> {:ok, key}
-      {:error, reason} -> {:error, reason}
+      {:ok, _} ->
+        :telemetry.execute([:sitevoice, :storage, :store], %{bytes: byte_size(binary)}, %{
+          bucket: bucket,
+          key: key,
+          content_type: content_type
+        })
+
+        {:ok, key}
+
+      {:error, reason} ->
+        Logger.error("Storage store_typed failed",
+          bucket: bucket,
+          key: key,
+          content_type: content_type,
+          reason: inspect(reason)
+        )
+
+        {:error, reason}
     end
   end
 
@@ -48,19 +97,32 @@ defmodule Sitevoice.Storage do
       String.ends_with?(key, ".m4a") -> fetch(@audio_bucket, key)
       String.ends_with?(key, ".jpg") -> fetch(@photo_bucket, key)
       String.ends_with?(key, ".pdf") -> fetch(@pdf_bucket, key)
-      true -> {:error, "Cannot determine bucket for key: #{key}"}
+      true ->
+        Logger.error("Storage cannot determine bucket for key", key: key)
+        {:error, "Cannot determine bucket for key: #{key}"}
     end
   end
 
   @spec fetch(bucket :: String.t(), key :: String.t()) ::
           {:ok, binary()} | {:error, term()}
   def fetch(bucket, key) do
+    Logger.debug("Storage fetching object", bucket: bucket, key: key)
+
     bucket
     |> ExAws.S3.get_object(key)
     |> ExAws.request()
     |> case do
-      {:ok, %{body: body}} -> {:ok, body}
-      {:error, reason} -> {:error, reason}
+      {:ok, %{body: body}} ->
+        :telemetry.execute([:sitevoice, :storage, :fetch], %{bytes: byte_size(body)}, %{
+          bucket: bucket,
+          key: key
+        })
+
+        {:ok, body}
+
+      {:error, reason} ->
+        Logger.error("Storage fetch failed", bucket: bucket, key: key, reason: inspect(reason))
+        {:error, reason}
     end
   end
 
@@ -69,6 +131,22 @@ defmodule Sitevoice.Storage do
   def presigned_url(bucket, key, expires_in) do
     config = ExAws.Config.new(:s3)
 
-    ExAws.S3.presigned_url(config, :get, bucket, key, expires_in: expires_in)
+    case ExAws.S3.presigned_url(config, :get, bucket, key, expires_in: expires_in) do
+      {:ok, _url} = result ->
+        Logger.debug("Storage presigned URL generated", bucket: bucket, key: key, expires_in: expires_in)
+        result
+
+      {:error, reason} = result ->
+        Logger.error("Storage presigned URL generation failed",
+          bucket: bucket,
+          key: key,
+          reason: inspect(reason)
+        )
+
+        result
+    end
   end
+
+  defp log_store_result({:ok, key}, _), do: Logger.debug("Storage store succeeded", key: key)
+  defp log_store_result({:error, reason}, key), do: Logger.error("Storage store failed", key: key, reason: inspect(reason))
 end

@@ -1,9 +1,18 @@
 defmodule Sitevoice.Steps.GeneratePdf do
   use Reactor.Step
 
+  require Logger
+
   @imprintor Application.compile_env(:sitevoice, :imprintor_mod, Imprintor)
 
   def run(%{log: log}, _, _) do
+    Logger.info("GeneratePdf starting",
+      log_id: log.id,
+      project: log.project.name,
+      date: Date.to_string(log.date),
+      photo_count: length(log.photos)
+    )
+
     template = File.read!(Application.app_dir(:sitevoice, "priv/templates/daily_log.typ"))
 
     data = %{
@@ -20,22 +29,37 @@ defmodule Sitevoice.Steps.GeneratePdf do
       "materials" => log.materials,
       "delays" => log.delays,
       "safety" => log.safety,
-      "photos" => Enum.map(log.photos, fn photo ->
-        %{
-          "url" => photo.url || "",
-          "caption" => photo.caption || "",
-          "category" => to_string(photo.category || "")
-        }
-      end),
+      "photos" =>
+        Enum.map(log.photos, fn photo ->
+          %{
+            "url" => photo.url || "",
+            "caption" => photo.caption || "",
+            "category" => to_string(photo.category || "")
+          }
+        end),
       "accuracy_score" => log.accuracy_score
     }
 
     config = Imprintor.Config.new(template, data, pdf_standard: "a-3a")
 
-    case @imprintor.compile_to_pdf(config) do
-      {:ok, binary} -> {:ok, binary}
-      {:error, reason} -> {:error, "PDF failed: #{reason}"}
-    end
+    :telemetry.span([:sitevoice, :pdf, :generate], %{log_id: log.id}, fn ->
+      result =
+        case @imprintor.compile_to_pdf(config) do
+          {:ok, binary} ->
+            Logger.info("GeneratePdf succeeded", log_id: log.id, pdf_bytes: byte_size(binary))
+            {:ok, binary}
+
+          {:error, reason} ->
+            Logger.error("GeneratePdf compilation failed",
+              log_id: log.id,
+              reason: inspect(reason)
+            )
+
+            {:error, "PDF failed: #{reason}"}
+        end
+
+      {result, %{}}
+    end)
   end
 
   def compensate(_, _, _, _), do: :ok
