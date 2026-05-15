@@ -14,7 +14,9 @@
 - [ ] `update_profile` and `update_role` actions exist with correct policies
 - [ ] `Sitevoice.Accounts.Organization` gains `has_many :users` relationship
 - [ ] `RegisterOrganization` action creates org + first user atomically in one transaction
-- [ ] `SitevoiceWeb.Plugs.SetTenant` reads `organization_id` from JWT claims and calls `Ash.Query.set_tenant/1`
+
+# pass tenant to every Ash call
+
 - [ ] `SitevoiceWeb.Plugs.VerifyToken` rejects requests without a valid Bearer token on protected routes
 - [ ] `:api` pipeline in router uses `SetTenant` plug after `load_from_bearer`
 - [ ] `mix ash.setup` runs clean after migration
@@ -47,7 +49,9 @@ conn → load_from_bearer → set_actor(:user) → SetTenant
 ```
 
 `SetTenant` reads `conn.assigns.current_user.organization_id` and calls
-`Ash.Query.set_tenant(organization_id)`. If the actor is nil (unauthenticated), it is a no-op
+
+# pass tenant to every Ash call
+
 — route-level authentication is the VerifyToken plug's job.
 
 ### VerifyToken Plug

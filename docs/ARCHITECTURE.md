@@ -346,7 +346,7 @@ Router — matches path to pipeline
 :api pipeline:
   plug :accepts, ["json"]
   plug VerifyToken          ← validates JWT, sets conn.assigns.current_user
-  plug SetTenant            ← calls Ash.Query.set_tenant(current_user.organization_id)
+# pass tenant to every Ash call
         │
         ▼
 AshJsonApi router
@@ -383,7 +383,7 @@ Response → client
 │                                                    │
 │  3. plug SetTenant                                 │
 │     → reads current_user.organization_id           │
-│     → calls Ash.Query.set_tenant(org_id)                 │
+# pass tenant to every Ash call
 │     → all Ash queries in this process now scoped   │
 │                                                    │
 └────────────────────────────────────────────────────┘
@@ -546,24 +546,24 @@ Every arrow represents a process boundary where tenant context must be explicitl
           │                │                │
     VerifyToken       VerifyToken      VerifyToken
     SetTenant plug    in socket        (on reconnect)
-    Ash.Query.set_tenant()  assigns          Ash.Query.set_tenant()
+# pass tenant to every Ash call
           │                │
           │          Channel join
-          │          Ash.Query.set_tenant()
+# pass tenant to every Ash call
           │                │
           │          Channel handle_in
-          │          Ash.Query.set_tenant()  ← re-apply each time
+# pass tenant to every Ash call
           │
     Ash action ── organization_id in job args
           │               │
     Changeset       Oban Worker
     after_action    perform/1
-    enqueues job    Ash.Query.set_tenant()  ← first line, always
+# pass tenant to every Ash call
                           │
                     Reactor starts
                           │
                     SetTenant step
-                    Ash.Query.set_tenant()
+# pass tenant to every Ash call
                     wait_for on all
                     subsequent steps
                           │
@@ -595,7 +595,7 @@ Every arrow represents a process boundary where tenant context must be explicitl
 │  │ 003 │ org-xyz         │ 05-14 │ draft  │ ...  │  │ ← invisible to org-abc
 │  └───────────────────────────────────────────────┘  │
 │                                                     │
-│  Query with Ash.Query.set_tenant("org-abc"):              │
+# pass tenant to every Ash call
 │  SELECT * FROM daily_logs                           │
 │  WHERE organization_id = 'org-abc'    ← auto-added  │
 │  AND   ...your filters...                           │
@@ -634,7 +634,7 @@ Every arrow represents a process boundary where tenant context must be explicitl
                            │
                            ▼
                     ┌─────────────┐
-                    │  set_tenant │  ← Ash.Query.set_tenant(organization_id)
+# pass tenant to every Ash call
                     └──────┬──────┘
                            │ wait_for (all Ash steps depend on this)
                            ▼
@@ -952,7 +952,7 @@ Oban worker picks up job (queue: :audio, concurrency 10)
         │
         ▼
 AudioProcessor.perform(%Job{args: %{log_id, organization_id}})
-  Ash.Query.set_tenant(org_id)         ← tenant established
+# pass tenant to every Ash call
   ProcessRecording Reactor.run() ← full pipeline
         │
         ▼
@@ -978,7 +978,7 @@ WRONG — forgetting to set tenant in worker:
 
 CORRECT — first line always:
   def perform(%Job{args: %{"log_id" => id, "organization_id" => org_id}}) do
-    Ash.Query.set_tenant(org_id)              # always first
+# pass tenant to every Ash call
     ProcessRecording.run(%{log_id: id, organization_id: org_id})
 ```
 
@@ -1033,7 +1033,7 @@ Layer 1: Authentication
   → 401 if invalid
         │
 Layer 2: Tenant Isolation (automatic)
-  SetTenant plug calls Ash.Query.set_tenant(org_id)
+# pass tenant to every Ash call
   AshPostgres adds WHERE organization_id = 'org-abc'
   → physically impossible to see another org's data
         │
@@ -1079,7 +1079,7 @@ Layer 4: Data returned
          Client: shows Processing screen
 
 4:02:31  Oban worker starts
-         Ash.Query.set_tenant("org-abc")
+# pass tenant to every Ash call
          Reactor starts:
 
 4:02:33  [Step 1] Fetch audio from Tigris
@@ -1156,14 +1156,14 @@ Every horizontal line below is a process boundary. Tenant context does NOT cross
 ```
 ┌────────────────────────────────────────────────────────────┐
 │  HTTP Request Process                                      │
-│  Ash.Query.set_tenant() called by SetTenant plug                 │
+# pass tenant to every Ash call
 │  All Ash calls in this process are tenant-scoped          │
 └────────────────────────────┬───────────────────────────────┘
                              │ Oban.insert() — job args cross boundary
 ════════════════════════════════ PROCESS BOUNDARY ═══════════
 ┌────────────────────────────▼───────────────────────────────┐
 │  Oban Worker Process                                       │
-│  perform/1 must call Ash.Query.set_tenant(args["organization_id"])│
+# pass tenant to every Ash call
 │  first line — no exceptions                               │
 └────────────────────────────┬───────────────────────────────┘
                              │ Reactor.run() called
@@ -1177,14 +1177,14 @@ Every horizontal line below is a process boundary. Tenant context does NOT cross
 ═══════════════════════════════ PROCESS BOUNDARY ════════════
 ┌────────────────────────────▼───────────────────────────────┐
 │  Reactor Async Step Process (structure, caption_photos)    │
-│  Ash.Query.set_tenant() inherited from Reactor SetTenant step   │
+# pass tenant to every Ash call
 │  (same session — Reactor manages this)                    │
 └────────────────────────────────────────────────────────────┘
 
 ════════════════════════════════════════════════════════════
 ┌────────────────────────────────────────────────────────────┐
 │  Phoenix Channel Process (long-lived)                      │
-│  Ash.Query.set_tenant() called on join                          │
+# pass tenant to every Ash call
 │  Re-called on every handle_in                             │
 │  org_id stored in socket.assigns.organization_id          │
 └────────────────────────────────────────────────────────────┘
@@ -1193,7 +1193,7 @@ Every horizontal line below is a process boundary. Tenant context does NOT cross
 ┌────────────────────────────────────────────────────────────┐
 │  Task.async (if used anywhere)                             │
 │  Must receive org_id as argument                          │
-│  Must call Ash.Query.set_tenant(org_id) inside the task         │
+# pass tenant to every Ash call
 └────────────────────────────────────────────────────────────┘
 ```
 
@@ -1319,7 +1319,8 @@ If an Enterprise client contractually requires schema isolation:
 1. Ash context strategy (`strategy :context`) replaces `strategy :attribute`
 2. `organization_id` column removed from tenanted tables
 3. A per-tenant migration runner must be built
-4. Oban, Channel, and Reactor tenant propagation changes from `Ash.Query.set_tenant(org_id)` to `Ash.Query.set_tenant(schema_name)`
+
+# pass tenant to every Ash call
 
 This is a significant migration. The attribute strategy is chosen specifically to defer this cost until there is a contractual forcing function.
 

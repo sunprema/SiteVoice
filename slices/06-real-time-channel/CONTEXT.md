@@ -18,10 +18,12 @@ Load these files before touching any code:
 ## Existing Files To Modify
 
 - `lib/sitevoice_web/channels/recording_channel.ex` — complete the scaffold:
-  - Add `Ash.Query.set_tenant(org_id)` call on `join/3` (currently missing)
-  - Subscribe to `"org:#{org_id}:log:#{log_id}"` PubSub topic on join so server-side broadcasts reach the client
-  - Add `handle_info/2` for `{:report_ready, _}`, `{:pipeline_update, _}`, `{:pipeline_failed, _}` — push each to client
-  - Keep existing `handle_in("recording_complete", ...)` unchanged
+
+# pass tenant to every Ash call
+
+- Subscribe to `"org:#{org_id}:log:#{log_id}"` PubSub topic on join so server-side broadcasts reach the client
+- Add `handle_info/2` for `{:report_ready, _}`, `{:pipeline_update, _}`, `{:pipeline_failed, _}` — push each to client
+- Keep existing `handle_in("recording_complete", ...)` unchanged
 - `lib/sitevoice_web/channels/user_socket.ex` — register `channel "log:*", SitevoiceWeb.LogChannel`
 - `lib/sitevoice/reporting/reactors/process_recording.ex` — insert `broadcast_pipeline_step` calls after `:save_transcript`, `:save_structure`, and `:generate_pdf` steps to emit `pipeline_update` events
 - `lib/sitevoice/reporting/steps/broadcast_ready.ex` — confirm it broadcasts on `"org:#{org_id}:log:#{log_id}"` (already correct; verify only)
@@ -52,7 +54,9 @@ Load these files before touching any code:
 
 - Module names use `Sitevoice` / `SitevoiceWeb` (lowercase v) — project convention
 - All PubSub topics must be `"org:#{org_id}:log:#{log_id}"` — never bare
-- `Ash.Query.set_tenant/1` must be called on `join/3` AND re-called in every `handle_in/3`
+
+# pass tenant to every Ash call
+
 - `handle_info/2` is a Channel callback — no need to re-set tenant (no Ash calls inside)
 - Subscribe to PubSub inside `join/3` with `Phoenix.PubSub.subscribe(Sitevoice.PubSub, topic)`
 - `BroadcastPipelineStep` inserts between key Reactor steps; it must receive `step:` as a string argument so different broadcast steps can label their position in the pipeline

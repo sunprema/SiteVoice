@@ -93,7 +93,7 @@ Update this table as slices are completed:
 | 04    | AI Pipeline    | ✅ Complete    |
 | 05    | PDF Generation | ✅ Complete    |
 | 06    | Real-time      | ✅ Complete    |
-| 07    | Notifications  | ⬜ Not started |
+| 07    | Notifications  | ✅ Complete    |
 | 08    | Integrations   | ⬜ Not started |
 | 09    | Mobile         | ⬜ Not started |
 
@@ -140,7 +140,7 @@ Update this table as slices are completed:
 
 ### Oban
 
-- Every worker's `perform/1` `Ash.Query.set_tenant(args["organization_id"])` as its first line
+- always pass tenant: explicitly to every Ash call
 - Never perform long-running work synchronously in a Phoenix Channel or controller
 - Always use `max_attempts: 3` minimum
 

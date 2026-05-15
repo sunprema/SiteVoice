@@ -53,7 +53,9 @@ File: `lib/sitevoice/workers/audio_processor.ex`
 
 - [x] `use Oban.Worker, queue: :audio, max_attempts: 3`
 - [x] `perform/1` matches `%Oban.Job{args: %{"log_id" => log_id, "organization_id" => org_id}}`
-- [x] First line: `Ash.Query.set_tenant(org_id)` (stubbed — Ash.Query.set_tenant not needed until Slice 04)
+
+# pass tenant to every Ash call
+
 - [x] For now, log the intent and return `:ok` (Reactor does not exist until Slice 04)
 
 ## 6. Create DailyLog Resource

@@ -7,9 +7,11 @@ after each major pipeline step.
 
 ## Acceptance Criteria
 
-- [ ] `SitevoiceWeb.RecordingChannel.join/3` calls `Ash.Query.set_tenant(org_id)` before any Ash call,
+# pass tenant to every Ash call
+
       subscribes to `"org:#{org_id}:log:#{log_id}"` via `Phoenix.PubSub.subscribe/2`, and returns
       `{:ok, socket}` for authorized users or `{:error, %{reason: "unauthorized"}}` otherwise
+
 - [ ] `SitevoiceWeb.RecordingChannel.handle_in("recording_complete", ...)` re-applies tenant, enqueues
       `AudioProcessor`, and pushes `"processing_started"` — behaviour unchanged from scaffold
 - [ ] `SitevoiceWeb.RecordingChannel.handle_info/2` handles `{:report_ready, payload}`,
@@ -74,8 +76,10 @@ end
 
 ### Tenant Rules for Channels
 
-- `join/3` — call `Ash.Query.set_tenant(org_id)` before any Ash operation; store `organization_id` in socket assigns
-- `handle_in/3` — re-call `Ash.Query.set_tenant(socket.assigns.organization_id)` at the top of every clause
+# pass tenant to every Ash call
+
+# pass tenant to every Ash call
+
 - `handle_info/2` — no Ash calls, so no tenant needed; just forward the message
 
 ### Authorization in LogChannel

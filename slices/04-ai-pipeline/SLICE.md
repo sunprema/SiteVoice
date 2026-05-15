@@ -13,8 +13,11 @@ and `BroadcastReady` step broadcasting `report_ready` over org-namespaced PubSub
 - [ ] Reactor step order matches the spec (§9.3): set_tenant → fetch_log → fetch_audio →
       transcribe → (structure + caption_photos concurrently) → save_structure → generate_pdf →
       store_pdf → notify
-- [ ] `Sitevoice.Steps.SetTenant` step: calls `Ash.Query.set_tenant(org_id)`, returns `{:ok, org_id}`,
+
+# pass tenant to every Ash call
+
       implements `compensate/4` returning `:ok`
+
 - [ ] `Sitevoice.Steps.FetchLog` step: fetches `DailyLog` by `log_id` via Ash read,
       has `wait_for :set_tenant`, implements `compensate/4` returning `:ok`
 - [ ] `Sitevoice.Steps.FetchFromTigris` step: calls `Sitevoice.Storage.fetch/1` with the audio key,
@@ -39,9 +42,12 @@ and `BroadcastReady` step broadcasting `report_ready` over org-namespaced PubSub
       `%{transcript: result(:transcribe)}`; compensate resets status back to `:pending`
 - [ ] `ash_update :save_structure` Reactor step: calls `DailyLog.:apply_structure` with all
       structured fields; compensate resets status back to `:processing`
-- [ ] `Sitevoice.Workers.AudioProcessor.perform/1`: first line is `Ash.Query.set_tenant(org_id)`,
+
+# pass tenant to every Ash call
+
       calls `ProcessRecording.run(%{log_id: log_id, organization_id: org_id})`, returns `:ok`
       on success, `{:error, e}` on failure (enabling Oban retry)
+
 - [ ] All external HTTP calls use `Req` with explicit timeouts
 - [ ] No Oban calls from inside any Reactor step
 - [ ] `mix compile --warnings-as-errors` — zero warnings

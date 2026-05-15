@@ -8,12 +8,13 @@ Work through in order. Check off each task as it is completed.
 
 File: `lib/sitevoice_web/channels/recording_channel.ex`
 
-- [x] Set `Ash.Query.set_tenant(org_id)` as the first line of `join/3` (before `authorized?/2` call)
+- [x] always pass tenant: explicitly to every Ash call
 - [x] Subscribe to `"org:#{org_id}:log:#{log_id}"` via `Phoenix.PubSub.subscribe(Sitevoice.PubSub, topic)` inside `join/3` after authorization passes
 - [x] Add `handle_info({:report_ready, payload}, socket)` — push `"report_ready"` to client with `payload`
 - [x] Add `handle_info({:pipeline_update, payload}, socket)` — push `"pipeline_update"` to client with `payload`
 - [x] Add `handle_info({:pipeline_failed, payload}, socket)` — push `"pipeline_failed"` to client with `payload`
-- [x] Verify `handle_in("recording_complete", ...)` still re-applies tenant via `Ash.Query.set_tenant(socket.assigns.organization_id)` at the top
+
+# pass tenant to every Ash call
 
 ## 2. Create LogChannel
 
@@ -22,10 +23,12 @@ File: `lib/sitevoice_web/channels/log_channel.ex`
 - [x] Define `SitevoiceWeb.LogChannel` with `use Phoenix.Channel`
 - [x] Implement `join("log:" <> log_id, _params, socket)`:
   - [x] Extract `org_id` from `socket.assigns.current_user.organization_id`
-  - [x] Call `Ash.Query.set_tenant(org_id)`
-  - [x] Fetch log with `Ash.get(DailyLog, log_id, tenant: to_string(org_id), authorize?: false)` — reject join with `{:error, %{reason: "not_found"}}` if `{:error, _}`
-  - [x] Subscribe to `"org:#{org_id}:log:#{log_id}"` via `Phoenix.PubSub.subscribe/2`
-  - [x] Return `{:ok, assign(socket, log_id: log_id, organization_id: org_id)}`
+
+# pass tenant to every Ash call
+
+- [x] Fetch log with `Ash.get(DailyLog, log_id, tenant: to_string(org_id), authorize?: false)` — reject join with `{:error, %{reason: "not_found"}}` if `{:error, _}`
+- [x] Subscribe to `"org:#{org_id}:log:#{log_id}"` via `Phoenix.PubSub.subscribe/2`
+- [x] Return `{:ok, assign(socket, log_id: log_id, organization_id: org_id)}`
 - [x] Add `handle_info({:report_ready, payload}, socket)` — push `"report_ready"` to client
 - [x] Add `handle_info({:pipeline_update, payload}, socket)` — push `"pipeline_update"` to client
 - [x] Add `handle_info({:pipeline_failed, payload}, socket)` — push `"pipeline_failed"` to client

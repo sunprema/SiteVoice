@@ -97,6 +97,7 @@ defmodule Sitevoice.Reporting.DailyLog do
       change set_attribute(:status, :submitted)
       change set_attribute(:submitted_at, &DateTime.utc_now/0)
       change Sitevoice.Reporting.Changes.DispatchIntegrations
+      change Sitevoice.Reporting.Changes.EnqueueNotification
     end
 
     update :mark_failed do

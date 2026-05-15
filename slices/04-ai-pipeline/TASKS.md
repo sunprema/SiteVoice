@@ -9,7 +9,9 @@ Work through in order. Check off each task as it is completed.
 File: `lib/sitevoice/reporting/steps/set_tenant.ex`
 
 - [x] `use Reactor.Step`
-- [x] `run/3` matches `%{organization_id: org_id}`, calls `Ash.Query.set_tenant(org_id)`, returns `{:ok, org_id}`
+
+# pass tenant to every Ash call
+
 - [x] `compensate/4` returns `:ok`
 
 ## 2. Create FetchLog Step
@@ -134,7 +136,8 @@ File: `lib/sitevoice/reporting/reactors/process_recording.ex`
 
 File: `lib/sitevoice/workers/audio_processor.ex`
 
-- [x] `perform/1` first line: `Ash.Query.set_tenant(org_id)` (not just assigned to `_tenant`)
+# pass tenant to every Ash call
+
 - [x] Calls `Sitevoice.Reporting.Reactors.ProcessRecording.run(%{log_id: log_id, organization_id: org_id})`
 - [x] On `{:ok, _}` returns `:ok`
 - [x] On `{:error, reason}` calls `DailyLog.:mark_failed` action via Ash, then returns `{:error, reason}`

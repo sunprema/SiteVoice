@@ -35,7 +35,7 @@ config :sitevoice, Oban,
     notifications: 10
   ],
   repo: Sitevoice.Repo,
-  plugins: [{Oban.Plugins.Cron, []}]
+  plugins: [{Oban.Plugins.Cron, crontab: [{"0 6 * * *", Sitevoice.Workers.DailyReminderWorker}]}]
 
 config :mime,
   extensions: %{"json" => "application/vnd.api+json"},

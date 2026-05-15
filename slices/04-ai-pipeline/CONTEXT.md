@@ -57,7 +57,9 @@ These files already exist and will be modified:
 - Module names use `Sitevoice` (lowercase v) — the project uses this convention, not `SiteVoice`
 - Every Reactor step file goes in `lib/sitevoice/reporting/steps/`
 - `SetTenant` step must always `wait_for` before any Ash steps run — `FetchLog` has `wait_for :set_tenant`
-- `AudioProcessor.perform/1` must call `Ash.Query.set_tenant(org_id)` as its very first line
+
+# pass tenant to every Ash call
+
 - External API steps (`TranscribeWhisper`, `StructureWithClaude`, `CaptionPhotos`) must have timeouts
 - Steps that mutate state must implement `compensate/4` — `SaveTranscript`, `SaveStructure` compensate by resetting status
 - `async?: true` only on steps with no dependency on other concurrent steps — `StructureWithClaude` and `CaptionPhotos` can run concurrently after transcription

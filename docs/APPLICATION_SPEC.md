@@ -366,7 +366,6 @@ defmodule SiteVoiceWeb.Plugs.SetTenant do
   def call(conn, _opts) do
     case conn.assigns[:current_user] do
       %{organization_id: org_id} when not is_nil(org_id) ->
-        Ash.Query.set_tenant(org_id)
         assign(conn, :current_tenant, org_id)
       _ ->
         conn
@@ -436,7 +435,7 @@ defmodule SiteVoice.Workers.AudioProcessor do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"log_id" => log_id, "organization_id" => org_id}}) do
-    Ash.Query.set_tenant(org_id)    # ← first line, always
+# pass tenant to every Ash call
 
     %{log_id: log_id, organization_id: org_id}
     |> SiteVoice.Reporting.Reactors.ProcessRecording.run()
@@ -476,7 +475,7 @@ defmodule SiteVoice.Steps.SetTenant do
   use Reactor.Step
 
   def run(%{organization_id: org_id}, _, _) do
-    Ash.Query.set_tenant(org_id)
+# pass tenant to every Ash call
     {:ok, org_id}
   end
 
@@ -494,12 +493,12 @@ defmodule SiteVoiceWeb.RecordingChannel do
 
   def join("recording:" <> log_id, _params, socket) do
     org_id = socket.assigns.current_user.organization_id
-    Ash.Query.set_tenant(org_id)
+# pass tenant to every Ash call
     {:ok, assign(socket, organization_id: org_id, log_id: log_id)}
   end
 
   def handle_in("recording_complete", %{"log_id" => log_id}, socket) do
-    Ash.Query.set_tenant(socket.assigns.organization_id)   # re-apply per handle_in
+# pass tenant to every Ash call
 
     %{log_id: log_id, organization_id: socket.assigns.organization_id}
     |> SiteVoice.Workers.AudioProcessor.new()
@@ -585,17 +584,7 @@ end
 
 ### 6.11 Tenant Isolation Checklist
 
-| Process Boundary            | How to Set Tenant                                                   |
-| --------------------------- | ------------------------------------------------------------------- |
-| HTTP request                | `SetTenant` plug → `Ash.Query.set_tenant(org_id)`                   |
-| Phoenix Channel `join`      | `Ash.Query.set_tenant(socket.assigns.current_user.organization_id)` |
-| Phoenix Channel `handle_in` | `Ash.Query.set_tenant(socket.assigns.organization_id)`              |
-| Oban worker `perform/1`     | `Ash.Query.set_tenant(args["organization_id"])` — first line        |
-| Ash Reactor                 | `SetTenant` step with `wait_for` on all Ash steps                   |
-| `Task.async`                | Pass `org_id`; call `Ash.Query.set_tenant` inside the task          |
-| Mix tasks / scripts         | `Ash.Query.set_tenant(org_id)` before any Ash operation             |
-
-**Code review rule:** Any module calling an Ash action must either (a) have `Ash.Query.set_tenant` earlier in the same process, or (b) be `SetTenant` itself.
+Make sure tenant is passed for every Ash call.
 
 ---
 
@@ -955,7 +944,7 @@ config :site_voice, Oban,
   ]
 ```
 
-**Rule:** Every worker's `perform/1` calls `Ash.Query.set_tenant(args["organization_id"])` as its first line.
+# pass tenant to every Ash call
 
 ### 9.3 Ash Reactor — Full Pipeline Definition
 
@@ -1206,7 +1195,7 @@ defmodule SiteVoiceWeb.RecordingChannel do
 
   def join("recording:" <> log_id, _params, socket) do
     org_id = socket.assigns.current_user.organization_id
-    Ash.Query.set_tenant(org_id)
+# pass tenant to every Ash call
     if authorized?(socket, log_id) do
       {:ok, assign(socket, log_id: log_id, organization_id: org_id)}
     else
@@ -1215,7 +1204,7 @@ defmodule SiteVoiceWeb.RecordingChannel do
   end
 
   def handle_in("recording_complete", %{"log_id" => log_id}, socket) do
-    Ash.Query.set_tenant(socket.assigns.organization_id)
+# pass tenant to every Ash call
     %{log_id: log_id, organization_id: socket.assigns.organization_id}
     |> SiteVoice.Workers.AudioProcessor.new()
     |> Oban.insert()
@@ -1448,7 +1437,7 @@ end
 pipeline :api do
   plug :accepts, ["json"]
   plug SiteVoiceWeb.Plugs.VerifyToken    # AshAuthentication → sets current_user
-  plug SiteVoiceWeb.Plugs.SetTenant      # Ash.Query.set_tenant(org_id)
+# pass tenant to every Ash call
 end
 
 pipeline :admin do
@@ -1794,7 +1783,9 @@ primary_region = "phx"
 **Consequences and rules:**
 
 - `organization_id` in every Oban job arg — enforced by code review
-- `Ash.Query.set_tenant/1` at every process boundary (HTTP, Channel, Oban, Reactor, Task)
+
+# pass tenant to every Ash call
+
 - Tigris keys org-prefixed
 - PubSub topics org-namespaced
 - All Postgres indexes: `organization_id` as leading column
