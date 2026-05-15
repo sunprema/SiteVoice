@@ -18,26 +18,9 @@ defmodule Sitevoice.Storage do
     "#{org_id}/#{project_id}/#{d.year}/#{d.month}/#{log_id}.pdf"
   end
 
-  def store_audio(key, binary) do
-    Logger.debug("Storage storing audio", key: key, bytes: byte_size(binary))
-    result = store_typed(@audio_bucket, key, binary, "audio/m4a")
-    log_store_result(result, key)
-    result
-  end
-
-  def store_photo(key, binary) do
-    Logger.debug("Storage storing photo", key: key, bytes: byte_size(binary))
-    result = store_typed(@photo_bucket, key, binary, "image/jpeg")
-    log_store_result(result, key)
-    result
-  end
-
-  def store_pdf(key, binary) do
-    Logger.debug("Storage storing PDF", key: key, bytes: byte_size(binary))
-    result = store_typed(@pdf_bucket, key, binary, "application/pdf")
-    log_store_result(result, key)
-    result
-  end
+  def store_audio(key, binary), do: store_labeled(@audio_bucket, key, binary, "audio/m4a", "audio")
+  def store_photo(key, binary), do: store_labeled(@photo_bucket, key, binary, "image/jpeg", "photo")
+  def store_pdf(key, binary), do: store_labeled(@pdf_bucket, key, binary, "application/pdf", "PDF")
 
   @spec store(bucket :: String.t(), key :: String.t(), body :: binary()) ::
           {:ok, String.t()} | {:error, term()}
@@ -60,6 +43,11 @@ defmodule Sitevoice.Storage do
         Logger.error("Storage put_object failed", bucket: bucket, key: key, reason: inspect(reason))
         {:error, reason}
     end
+  end
+
+  defp store_labeled(bucket, key, binary, content_type, label) do
+    Logger.debug("Storage storing #{label}", key: key, bytes: byte_size(binary))
+    store_typed(bucket, key, binary, content_type)
   end
 
   defp store_typed(bucket, key, binary, content_type) do
@@ -147,6 +135,4 @@ defmodule Sitevoice.Storage do
     end
   end
 
-  defp log_store_result({:ok, key}, _), do: Logger.debug("Storage store succeeded", key: key)
-  defp log_store_result({:error, reason}, key), do: Logger.error("Storage store failed", key: key, reason: inspect(reason))
 end

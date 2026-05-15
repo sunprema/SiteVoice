@@ -6,23 +6,15 @@ defmodule Sitevoice.Steps.FetchFromTigris do
   def run(%{key: key}, _, _) do
     Logger.debug("FetchFromTigris fetching object", storage_key: key)
 
-    result = Sitevoice.Storage.fetch(key)
+    case Sitevoice.Storage.fetch(key) do
+      {:ok, binary} = ok ->
+        Logger.info("FetchFromTigris fetch succeeded", storage_key: key, bytes: byte_size(binary))
+        ok
 
-    case result do
-      {:ok, binary} ->
-        Logger.info("FetchFromTigris fetch succeeded",
-          storage_key: key,
-          bytes: byte_size(binary)
-        )
-
-      {:error, reason} ->
-        Logger.error("FetchFromTigris fetch failed",
-          storage_key: key,
-          reason: inspect(reason)
-        )
+      error ->
+        # Storage.fetch already logs the error with bucket/key detail
+        error
     end
-
-    result
   end
 
   def compensate(_, _, _, _), do: :ok
