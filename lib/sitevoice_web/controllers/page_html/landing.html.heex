@@ -1,0 +1,405 @@
+<%!-- Landing page: exact port of docs/mockups/sitevoice-landing.html --%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SiteVoice AI — Speak Your Day. Build Your Report.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Barlow:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --orange:      #FF5C00;
+      --orange-hot:  #FF7A2F;
+      --steel:       #0E1117;
+      --steel-mid:   #161C27;
+      --steel-light: #1F2836;
+      --slate:       #2C3A4F;
+      --wire:        #3D4F65;
+      --chalk:       #C8D0DC;
+      --white:       #EEF1F5;
+      --yellow:      #FFB800;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --font-body: 'Barlow', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--steel);
+      color: var(--chalk);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 9999;
+    }
+  </style>
+  <link rel="stylesheet" href={~p"/assets/css/app.css"} />
+</head>
+<body>
+
+<%!-- NAV --%>
+<nav>
+  <div class="nav-logo">
+    Site<span>Voice</span>&nbsp;AI
+    <span class="logo-badge">Beta</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href={~p"/sign-in"}>Sign In</a></li>
+    <li><a href={~p"/register"} class="nav-cta">Get Early Access</a></li>
+  </ul>
+</nav>
+
+<%!-- HERO --%>
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">AI-Powered Field Reporting</div>
+    <h1>
+      SPEAK<br>
+      YOUR <span class="accent">DAY.</span>
+      <span class="rule">BUILD YOUR REPORT.</span>
+    </h1>
+    <p class="hero-sub">
+      Foremen dictate their 90-second site walkthrough. SiteVoice AI converts it into a professional daily log — in under 30 seconds.
+    </p>
+    <div class="hero-actions">
+      <a href={~p"/register"} class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+        Start Free Trial
+      </a>
+      <a href="#how" class="btn-ghost">
+        See How It Works
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">75%</div>
+        <div class="stat-label">Time Saved</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">90s</div>
+        <div class="stat-label">To Dictate</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">30s</div>
+        <div class="stat-label">To Report</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="phone-wrap">
+      <div class="float-badge fb1">
+        <div class="float-badge-dot" style="background:#22c55e"></div>
+        <span style="font-size:12px; color:var(--chalk); font-family:var(--font-mono);">Report Generated</span>
+      </div>
+      <div class="float-badge fb2">
+        <div class="float-badge-dot" style="background:var(--orange)"></div>
+        <span style="font-size:12px; color:var(--chalk); font-family:var(--font-mono);">Sent to Procore ↗</span>
+      </div>
+      <div class="float-badge fb3" style="flex-direction:column; align-items:flex-start; gap:4px;">
+        <span style="font-size:9px; font-family:var(--font-mono); color:var(--orange); letter-spacing:1px;">LABOR</span>
+        <span style="font-size:11px; color:var(--chalk);">12 workers on site</span>
+      </div>
+
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="app-header">
+            <span>SiteVoice AI</span>
+            <span>4:02 PM</span>
+          </div>
+          <div class="record-btn-wrap">
+            <div class="record-btn">
+              <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="white" stroke-width="2" fill="none"/><line x1="8" y1="23" x2="16" y2="23" stroke="white" stroke-width="2" fill="none"/></svg>
+            </div>
+            <div class="rec-label">● Recording 0:47</div>
+          </div>
+          <div class="waveform">
+            <div class="wave-bar" style="--h:8px;  --d:0.4s"></div>
+            <div class="wave-bar" style="--h:20px; --d:0.5s"></div>
+            <div class="wave-bar" style="--h:12px; --d:0.3s"></div>
+            <div class="wave-bar" style="--h:32px; --d:0.6s"></div>
+            <div class="wave-bar" style="--h:18px; --d:0.45s"></div>
+            <div class="wave-bar" style="--h:28px; --d:0.35s"></div>
+            <div class="wave-bar" style="--h:10px; --d:0.55s"></div>
+            <div class="wave-bar" style="--h:36px; --d:0.42s"></div>
+            <div class="wave-bar" style="--h:22px; --d:0.38s"></div>
+            <div class="wave-bar" style="--h:14px; --d:0.5s"></div>
+            <div class="wave-bar" style="--h:30px; --d:0.46s"></div>
+            <div class="wave-bar" style="--h:8px;  --d:0.4s"></div>
+          </div>
+          <div class="transcript-box">
+            <div class="transcript-label">Live Transcript</div>
+            <div class="transcript-text">
+              ...north wall framing is about 80% complete, Crane 2 was down till noon, Martinez crew did rebar on Level 3...<span class="cursor"></span>
+            </div>
+          </div>
+          <div class="report-preview">
+            <div class="rp-row">
+              <div class="rp-label">LABOR</div>
+              <div class="rp-val">12 workers · Martinez crew (rebar, Lvl 3)</div>
+            </div>
+            <div class="rp-row">
+              <div class="rp-label">PROGRESS</div>
+              <div class="rp-val">N. wall framing 80% complete</div>
+            </div>
+            <div class="rp-row">
+              <div class="rp-label">EQUIP.</div>
+              <div class="rp-val">Crane 2 offline until 12:00 PM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%!-- SOCIAL PROOF --%>
+<div class="social-strip">
+  <div class="social-strip-label">Trusted by field teams at</div>
+  <div class="logos-row">
+    <div class="fake-logo">Turner</div>
+    <div class="fake-logo">Skanska</div>
+    <div class="fake-logo">Hensel Phelps</div>
+    <div class="fake-logo">McCarthy</div>
+    <div class="fake-logo">DPR</div>
+  </div>
+</div>
+
+<%!-- HOW IT WORKS --%>
+<section class="how" id="how">
+  <div class="how-inner">
+    <div class="section-label">The Flow</div>
+    <h2>FROM JOBSITE<br>TO <em>INBOX</em></h2>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-time">4:00 PM</div>
+        <div class="step-num">01</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+        </div>
+        <div class="step-title">Tap &amp; Talk</div>
+        <div class="step-desc">Open the app. Hit record. Walk the site for 90 seconds and narrate your day like you're calling your PM.</div>
+      </div>
+      <div class="step">
+        <div class="step-time">4:02 PM</div>
+        <div class="step-num">02</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="step-title">AI Transcribes</div>
+        <div class="step-desc">Whisper AI strips the noise and nails construction jargon — rebar, HVAC, BIM, pour schedules. Bilingual support included.</div>
+      </div>
+      <div class="step">
+        <div class="step-time">4:02 PM</div>
+        <div class="step-num">03</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <div class="step-title">Structured Log</div>
+        <div class="step-desc">Claude AI categorizes everything: labor, progress, equipment, delays, safety — into the standard daily log format.</div>
+      </div>
+      <div class="step">
+        <div class="step-time">4:03 PM</div>
+        <div class="step-num">04</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <div class="step-title">Quick Review</div>
+        <div class="step-desc">Foreman reads the AI draft in 20 seconds, makes a tweak or two, and taps Submit. No typing. No re-reading.</div>
+      </div>
+      <div class="step" style="border-right:none;">
+        <div class="step-time">4:04 PM</div>
+        <div class="step-num">05</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.6 19.79 19.79 0 0 1 1.61 5a2 2 0 0 1 1.99-2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.5a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.1-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 18c.005.16.005.32 0 .48z"/></svg>
+        </div>
+        <div class="step-title">PM Gets the PDF</div>
+        <div class="step-desc">A branded PDF lands in the PM's inbox. Data pushes to Procore or Autodesk automatically. Done.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%!-- FEATURES --%>
+<section id="features">
+  <div class="features-inner">
+    <div class="features-header">
+      <div>
+        <div class="section-label">Capabilities</div>
+        <h2>BUILT FOR<br>THE <em>SITE</em></h2>
+      </div>
+      <p class="features-intro">
+        Every feature was designed for a foreman standing in a muddy basement with gloves on — not a product manager in a conference room.
+      </p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        </svg>
+        <div class="feat-title">Noise-Cancelling Transcription</div>
+        <div class="feat-desc">Record over crane noise, concrete pours, and wind. Whisper AI extracts the voice and the meaning.</div>
+        <span class="feat-tag">Whisper AI</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <div class="feat-title">Bilingual Support</div>
+        <div class="feat-desc">Speak in Spanish, receive an English report. Critical for multilingual crews and GC documentation.</div>
+        <span class="feat-tag">ES → EN</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+        </svg>
+        <div class="feat-title">AI-Structured Log</div>
+        <div class="feat-desc">Labor, progress, equipment, materials, safety, delays — automatically separated into the right buckets.</div>
+        <span class="feat-tag">Claude AI</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <div class="feat-title">Photo Auto-Captioning</div>
+        <div class="feat-desc">Snap a photo on site. AI reads the audio context and captions it — "Crack in east footing, per supervisor's note."</div>
+        <span class="feat-tag">Vision AI</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <div class="feat-title">Approval Workflow</div>
+        <div class="feat-desc">Every report gets a human review before it's locked. Edit, annotate, and submit in under a minute.</div>
+        <span class="feat-tag">Foreman → PM</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M18 20V10M12 20V4M6 20v-6"/>
+        </svg>
+        <div class="feat-title">Procore &amp; ACC Sync</div>
+        <div class="feat-desc">Push daily logs directly into Procore or Autodesk Construction Cloud. No copy-paste. No double entry.</div>
+        <span class="feat-tag">Enterprise</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4zM8 2v16M16 6v16"/>
+        </svg>
+        <div class="feat-title">Offline-First Mode</div>
+        <div class="feat-desc">No LTE in the basement? Record anyway. The app queues everything and syncs the moment you're back in range.</div>
+        <span class="feat-tag">Always On</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <div class="feat-title">Branded PDF Reports</div>
+        <div class="feat-desc">Professional layouts with your company logo, project number, and colors. Defensible in court.</div>
+        <span class="feat-tag">Auto-Generated</span>
+      </div>
+      <div class="feat-card">
+        <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <div class="feat-title">Claim-Ready Records</div>
+        <div class="feat-desc">Every report is timestamped, signed, and stored. One delay claim prevented = 1,667 months of subscription costs covered.</div>
+        <span class="feat-tag">Legal Defense</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%!-- TESTIMONIAL --%>
+<div class="testimonial-wrap">
+  <p class="quote">
+    I used to spend 45 minutes at the end of every shift. Now I talk for 90 seconds while I walk to my truck. The report is ready before I get home.
+  </p>
+  <div class="quote-author">
+    <div class="author-avatar">R</div>
+    <div class="author-info">
+      <div class="author-name">Ramiro V.</div>
+      <div class="author-title">Senior Foreman · Commercial GC, Phoenix AZ</div>
+    </div>
+  </div>
+</div>
+
+<%!-- PRICING --%>
+<section class="pricing" id="pricing">
+  <div class="pricing-inner">
+    <div class="section-label">Pricing</div>
+    <h2>NO NONSENSE<br><em>PRICING</em></h2>
+    <div class="pricing-grid">
+      <div class="plan">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price"><sup>$</sup>29<sub>/mo per foreman</sub></div>
+        <p class="plan-desc">Everything a foreman needs to report their day in 2 minutes flat.</p>
+        <ul class="plan-features">
+          <li>Unlimited daily reports</li>
+          <li>Noise-cancelling transcription</li>
+          <li>AI structuring (6 categories)</li>
+          <li>Photo upload &amp; captioning</li>
+          <li>PDF export</li>
+          <li>Offline mode</li>
+          <li>Bilingual (EN/ES)</li>
+        </ul>
+        <a href={~p"/register"} class="plan-btn plan-btn-outline">Start 14-Day Free Trial</a>
+      </div>
+      <div class="plan plan-featured">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price"><sup>$</sup>500<sub>/mo per project</sub></div>
+        <p class="plan-desc">Unlimited users, full integration stack, and your brand on every page.</p>
+        <ul class="plan-features">
+          <li>Everything in Pro</li>
+          <li>Unlimited users per project</li>
+          <li>Custom PDF branding</li>
+          <li>Procore integration</li>
+          <li>Autodesk Construction Cloud</li>
+          <li>Slack / email push</li>
+          <li>PM dashboard &amp; analytics</li>
+          <li>Dedicated support</li>
+        </ul>
+        <a href={~p"/register"} class="plan-btn plan-btn-fill">Book a Demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%!-- FINAL CTA --%>
+<section class="cta-section">
+  <h2>STOP<br><em>TYPING.</em></h2>
+  <p class="cta-sub">Your crew worked a 10-hour shift. You shouldn't spend the last hour writing it up.</p>
+  <div class="cta-btns">
+    <a href={~p"/register"} class="btn-white">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+      Start Free — No Card Needed
+    </a>
+    <a href={~p"/register"} class="btn-dark">Talk to Sales</a>
+  </div>
+</section>
+
+<%!-- FOOTER --%>
+<footer>
+  <div class="footer-logo">Site<span>Voice</span> AI</div>
+  <div class="footer-copy">© 2025 SiteVoice AI · Built for the field.</div>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>

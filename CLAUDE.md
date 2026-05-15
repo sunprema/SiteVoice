@@ -99,7 +99,7 @@ Update this table as slices are completed:
 | 05    | PDF Generation | ✅ Complete    |
 | 06    | Real-time      | ✅ Complete    |
 | 07    | Notifications  | ✅ Complete    |
-| 08    | LiveView       | ⬜ Not started |
+| 08    | LiveView       | ✅ Complete    |
 | 09    | Integrations   | ⬜ Not started |
 | 10    | Mobile         | ⬜ Not started |
 

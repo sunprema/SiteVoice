@@ -1,0 +1,114 @@
+<div class="min-h-screen flex items-center justify-center bg-base-200 py-12 px-4">
+  <div class="card w-full max-w-md bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h1 class="card-title text-2xl font-bold mb-1">Create your account</h1>
+      <p class="text-sm text-base-content/60 mb-6">
+        Set up your organization and get started with SiteVoice.
+      </p>
+
+      <%= if @errors != [] do %>
+        <div class="alert alert-error mb-4">
+          <ul class="list-disc list-inside space-y-1">
+            <%= for error <- @errors do %>
+              <li class="text-sm"><%= error %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <form method="post" action={~p"/register"} phx-feedback-for="registration">
+        <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
+
+        <div class="form-control mb-4">
+          <label class="label" for="registration_org_name">
+            <span class="label-text font-medium">Company / Organization Name</span>
+          </label>
+          <input
+            id="registration_org_name"
+            type="text"
+            name="registration[org_name]"
+            value={Map.get(@params, "org_name", "")}
+            placeholder="Acme Construction"
+            class="input input-bordered w-full"
+            required
+            autocomplete="organization"
+          />
+        </div>
+
+        <div class="form-control mb-4">
+          <label class="label" for="registration_name">
+            <span class="label-text font-medium">Your Full Name</span>
+          </label>
+          <input
+            id="registration_name"
+            type="text"
+            name="registration[name]"
+            value={Map.get(@params, "name", "")}
+            placeholder="Jane Smith"
+            class="input input-bordered w-full"
+            required
+            autocomplete="name"
+          />
+        </div>
+
+        <div class="form-control mb-4">
+          <label class="label" for="registration_email">
+            <span class="label-text font-medium">Work Email</span>
+          </label>
+          <input
+            id="registration_email"
+            type="email"
+            name="registration[email]"
+            value={Map.get(@params, "email", "")}
+            placeholder="jane@acme.com"
+            class="input input-bordered w-full"
+            required
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-control mb-4">
+          <label class="label" for="registration_password">
+            <span class="label-text font-medium">Password</span>
+          </label>
+          <input
+            id="registration_password"
+            type="password"
+            name="registration[password]"
+            placeholder="At least 8 characters"
+            class="input input-bordered w-full"
+            required
+            minlength="8"
+            autocomplete="new-password"
+          />
+        </div>
+
+        <div class="form-control mb-6">
+          <label class="label" for="registration_password_confirmation">
+            <span class="label-text font-medium">Confirm Password</span>
+          </label>
+          <input
+            id="registration_password_confirmation"
+            type="password"
+            name="registration[password_confirmation]"
+            placeholder="Repeat your password"
+            class="input input-bordered w-full"
+            required
+            autocomplete="new-password"
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full">
+          Create Account
+        </button>
+      </form>
+
+      <div class="divider my-4"></div>
+
+      <p class="text-sm text-center text-base-content/60">
+        Already have an account?
+        <a href={~p"/sign-in"} class="link link-primary">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>

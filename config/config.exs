@@ -39,7 +39,12 @@ config :sitevoice, Oban,
 
 config :mime,
   extensions: %{"json" => "application/vnd.api+json"},
-  types: %{"application/vnd.api+json" => ["json"]}
+  types: %{
+    "application/vnd.api+json" => ["json"],
+    "audio/x-m4a" => ["m4a"],
+    "audio/ogg" => ["ogg"],
+    "image/heic" => ["heic"]
+  }
 
 config :ash_json_api,
   show_public_calculations_when_loaded?: false,

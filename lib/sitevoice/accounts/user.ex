@@ -177,6 +177,7 @@ defmodule Sitevoice.Accounts.User do
         sensitive? true
       end
 
+      prepare Sitevoice.Accounts.Preparations.SetTenantFromSignInToken
       prepare AshAuthentication.Strategy.Password.SignInWithTokenPreparation
 
       metadata :token, :string do

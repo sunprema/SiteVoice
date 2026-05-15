@@ -13,7 +13,9 @@ defmodule SitevoiceWeb.Router do
     plug :put_root_layout, html: {SitevoiceWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug SitevoiceWeb.Plugs.SetTenantFromToken
     plug :load_from_session
+    plug SitevoiceWeb.Plugs.SetTenant
   end
 
   pipeline :api do
@@ -33,16 +35,13 @@ defmodule SitevoiceWeb.Router do
     pipe_through :browser
 
     ash_authentication_live_session :authenticated_routes do
-      # in each liveview, add one of the following at the top of the module:
-      #
-      # If an authenticated user must be present:
-      # on_mount {SitevoiceWeb.LiveUserAuth, :live_user_required}
-      #
-      # If an authenticated user *may* be present:
-      # on_mount {SitevoiceWeb.LiveUserAuth, :live_user_optional}
-      #
-      # If an authenticated user must *not* be present:
-      # on_mount {SitevoiceWeb.LiveUserAuth, :live_no_user}
+      live "/dashboard", DashboardLive
+      live "/projects", Projects.IndexLive
+      live "/projects/:id", Projects.ShowLive
+      live "/projects/:project_id/logs/new", Logs.NewLive
+      live "/logs", Logs.IndexLive
+      live "/logs/:id", Logs.ShowLive
+      live "/logs/:id/processing", Logs.ProcessingLive
     end
 
     post "/rpc/run", AshTypescriptRpcController, :run
@@ -63,7 +62,9 @@ defmodule SitevoiceWeb.Router do
   scope "/", SitevoiceWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    get "/", PageController, :landing
+    get "/register", RegistrationController, :new
+    post "/register", RegistrationController, :create
     auth_routes AuthController, Sitevoice.Accounts.User, path: "/auth"
     sign_out_route AuthController
 
