@@ -230,6 +230,52 @@ defmodule SitevoiceWeb.Logs.ShowLive do
             />
           <% end %>
         </div>
+
+        <%!-- Site Photos --%>
+        <%= if @log.photos != [] do %>
+          <div class="card" style="margin-bottom: 32px;">
+            <div class="section-label" style="margin-bottom: 16px;">
+              Site Photos
+              <span style="font-size: 11px; font-weight: 400; opacity: 0.5; margin-left: 8px;"><%= length(@log.photos) %> attached</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
+              <%= for photo <- @log.photos do %>
+                <.photo_tile photo={photo} />
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+      </div>
+    </div>
+    """
+  end
+
+  defp photo_tile(assigns) do
+    ~H"""
+    <div style="border-radius: 6px; overflow: hidden; background: var(--navy-mid); border: 1px solid rgba(255,255,255,0.06);">
+      <%= if @photo.url do %>
+        <a href={@photo.url} target="_blank" style="display: block; aspect-ratio: 4/3; overflow: hidden;">
+          <img src={@photo.url} style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s ease;" />
+        </a>
+      <% else %>
+        <div style="aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; opacity: 0.3;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+      <% end %>
+      <div style="padding: 8px 10px;">
+        <%= if @photo.category do %>
+          <div style="font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #e8601c; margin-bottom: 3px;">
+            <%= @photo.category %>
+          </div>
+        <% end %>
+        <%= if @photo.caption do %>
+          <div style="font-size: 11px; color: var(--chalk); opacity: 0.7; line-height: 1.4;">
+            <%= @photo.caption %>
+          </div>
+        <% else %>
+          <div style="font-size: 11px; color: var(--chalk); opacity: 0.3; font-style: italic;">No caption</div>
+        <% end %>
       </div>
     </div>
     """
