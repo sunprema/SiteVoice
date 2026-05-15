@@ -129,7 +129,6 @@ defmodule Sitevoice.Reporting.DailyLog do
 
     read :read do
       primary? true
-      prepare build(load: [:pdf_url, :photos])
     end
 
     read :list_for_project do
@@ -202,6 +201,7 @@ defmodule Sitevoice.Reporting.DailyLog do
   paper_trail do
     store_action_name? true
     attributes_as_attributes [:organization_id]
+    ignore_attributes [:transcript, :accuracy_score]
   end
 
   json_api do

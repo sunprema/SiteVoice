@@ -19,9 +19,12 @@ defmodule Sitevoice.Steps.GeneratePdf do
       "organization" => log.organization.name,
       "project" => log.project.name,
       "project_code" => log.project.code,
+      "project_address" => log.project.address || "",
       "date" => Date.to_string(log.date),
       "foreman" => log.foreman.name,
       "submitted_at" => format_dt(log.submitted_at),
+      "status" => to_string(log.status),
+      "weather" => log.weather || "",
       "log_id" => log.id,
       "labor" => log.labor,
       "progress" => log.progress,
@@ -32,7 +35,6 @@ defmodule Sitevoice.Steps.GeneratePdf do
       "photos" =>
         Enum.map(log.photos, fn photo ->
           %{
-            "url" => photo.url || "",
             "caption" => photo.caption || "",
             "category" => to_string(photo.category || "")
           }

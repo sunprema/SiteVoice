@@ -8,9 +8,9 @@ defmodule Sitevoice.Projects.Calculations.LastReportDate do
     results =
       Enum.map(records, fn record ->
         logs =
-          Ash.Query.new(Sitevoice.Reporting.DailyLog)
-          |> Ash.Query.filter(project_id == ^record.id and status == :submitted)
-          |> Ash.Query.sort(date: :desc)
+          Sitevoice.Reporting.DailyLog
+          |> Ash.Query.for_read(:list_for_project, %{project_id: record.id})
+          |> Ash.Query.filter(status == :submitted)
           |> Ash.Query.limit(1)
           |> Ash.Query.select([:date])
           |> Ash.read!(tenant: to_string(record.organization_id), authorize?: false)
