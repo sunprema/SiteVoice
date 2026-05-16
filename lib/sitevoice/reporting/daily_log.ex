@@ -61,6 +61,8 @@ defmodule Sitevoice.Reporting.DailyLog do
     belongs_to :foreman, Sitevoice.Accounts.User, allow_nil?: false, attribute_writable?: true
     belongs_to :project, Sitevoice.Projects.Project, allow_nil?: false
     has_many :photos, Sitevoice.Reporting.Photo
+    has_many :log_entries, Sitevoice.Reporting.LogEntry
+    has_many :daily_attendances, Sitevoice.Reporting.DailyAttendance
   end
 
   calculations do
@@ -70,6 +72,28 @@ defmodule Sitevoice.Reporting.DailyLog do
   end
 
   actions do
+    create :start_log do
+      accept [:date, :weather]
+
+      argument :project_id, :uuid, allow_nil?: false
+
+      upsert? true
+      upsert_identity :unique_log_per_day
+      upsert_fields [:weather, :updated_at]
+
+      change set_attribute(:organization_id, actor(:organization_id))
+      change set_attribute(:foreman_id, actor(:id))
+      change set_attribute(:status, :pending)
+      change set_attribute(:project_id, arg(:project_id))
+      change Sitevoice.Reporting.Changes.CreateAttendanceRows
+    end
+
+    update :submit_entries do
+      require_atomic? false
+      change set_attribute(:status, :processing)
+      change Sitevoice.Reporting.Changes.EnqueueEntriesProcessing
+    end
+
     create :submit_recording do
       accept [:date, :audio_key, :audio_duration, :weather]
 
@@ -204,9 +228,14 @@ defmodule Sitevoice.Reporting.DailyLog do
   end
 
   policies do
-    policy action([:submit_recording, :submit_text_report]) do
+    policy action([:start_log, :submit_recording, :submit_text_report]) do
       authorize_if actor_attribute_equals(:role, :foreman)
       authorize_if actor_attribute_equals(:role, :pm)
+      authorize_if actor_attribute_equals(:role, :org_admin)
+    end
+
+    policy action([:submit_entries]) do
+      authorize_if relates_to_actor_via(:foreman)
       authorize_if actor_attribute_equals(:role, :org_admin)
     end
 

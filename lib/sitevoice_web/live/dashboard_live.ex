@@ -153,7 +153,12 @@ defmodule SitevoiceWeb.DashboardLive do
                 Review Report →
               </a>
             <% end %>
-            <%= if @today_log.status in [:processing, :pending] do %>
+            <%= if @today_log.status == :pending do %>
+              <a href={~p"/projects/#{@today_log.project_id}/logs/today"} class="btn-primary" style="padding: 10px 20px; font-size: 13px;">
+                Continue Session →
+              </a>
+            <% end %>
+            <%= if @today_log.status == :processing do %>
               <a href={~p"/logs/#{@today_log.id}/processing"} class="btn-ghost">
                 View Progress →
               </a>
@@ -161,12 +166,17 @@ defmodule SitevoiceWeb.DashboardLive do
           </div>
         <% else %>
           <div style="color: var(--chalk); opacity: 0.6; font-size: 14px; margin-bottom: 16px;">
-            No report submitted today yet.
+            No report started today yet.
           </div>
-          <a href={~p"/projects"} class="btn-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-            RECORD DAY
-          </a>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href={~p"/projects"} class="btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Start Log Session
+            </a>
+            <a href={~p"/projects"} class="btn-ghost" style="font-size: 12px;">
+              Quick Submit
+            </a>
+          </div>
         <% end %>
       </div>
 

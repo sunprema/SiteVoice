@@ -253,7 +253,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
                   Download PDF
                 </a>
               <% end %>
-              <%= if @log.status == :draft && @log.photos != [] do %>
+              <%= if @log.status == :draft do %>
                 <button class="btn-secondary" phx-click="regenerate_pdf" disabled={@regenerating_pdf}>
                   <%= if @regenerating_pdf do %>
                     Regenerating…

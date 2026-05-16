@@ -39,6 +39,7 @@ defmodule SitevoiceWeb.Router do
       live "/projects", Projects.IndexLive
       live "/projects/:id", Projects.ShowLive
       live "/projects/:project_id/logs/new", Logs.NewLive
+      live "/projects/:project_id/logs/today", Logs.LogSessionLive
       live "/logs", Logs.IndexLive
       live "/logs/:id", Logs.ShowLive
       live "/logs/:id/processing", Logs.ProcessingLive

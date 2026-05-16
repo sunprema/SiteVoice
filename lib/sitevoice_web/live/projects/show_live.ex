@@ -44,6 +44,8 @@ defmodule SitevoiceWeb.Projects.ShowLive do
           []
         end
 
+      crew_templates = load_crew_templates(project_id, org_id, user)
+
       {:ok,
        socket
        |> assign(:tenant, org_id)
@@ -53,7 +55,10 @@ defmodule SitevoiceWeb.Projects.ShowLive do
        |> assign(:addable_users, addable_users)
        |> assign(:show_member_form, false)
        |> assign(:member_error, nil)
-       |> assign(:confirm_remove, nil)}
+       |> assign(:confirm_remove, nil)
+       |> assign(:crew_templates, crew_templates)
+       |> assign(:show_crew_form, false)
+       |> assign(:crew_error, nil)}
     else
       _ ->
         {:ok,
@@ -154,6 +159,94 @@ defmodule SitevoiceWeb.Projects.ShowLive do
     end
   end
 
+  def handle_event("open_crew_form", _params, socket) do
+    {:noreply, assign(socket, show_crew_form: true, crew_error: nil)}
+  end
+
+  def handle_event("close_crew_form", _params, socket) do
+    {:noreply, assign(socket, show_crew_form: false, crew_error: nil)}
+  end
+
+  def handle_event("add_crew", %{"crew" => params}, socket) do
+    user = socket.assigns.current_user
+    org_id = socket.assigns.tenant
+    project = socket.assigns.project
+
+    headcount =
+      case Integer.parse(params["headcount"] || "1") do
+        {n, _} -> max(1, n)
+        :error -> 1
+      end
+
+    trade =
+      case params["trade"] do
+        t when t in ~w(concrete framing electrical plumbing steel hvac general) ->
+          String.to_existing_atom(t)
+        _ ->
+          :general
+      end
+
+    crew_params = %{
+      name: params["name"],
+      trade: trade,
+      subcontractor: presence(params["subcontractor"]),
+      default_headcount: headcount,
+      project_id: project.id
+    }
+
+    case Sitevoice.Reporting.create_crew_template(crew_params,
+           tenant: org_id,
+           actor: user,
+           authorize?: true
+         ) do
+      {:ok, _template} ->
+        templates = load_crew_templates(project.id, org_id, user)
+        {:noreply, socket |> assign(:crew_templates, templates) |> assign(:show_crew_form, false) |> assign(:crew_error, nil)}
+
+      {:error, error} ->
+        {:noreply, assign(socket, :crew_error, format_error(error))}
+    end
+  end
+
+  def handle_event("deactivate_crew", %{"id" => template_id}, socket) do
+    user = socket.assigns.current_user
+    org_id = socket.assigns.tenant
+    project = socket.assigns.project
+
+    case Ash.get(Sitevoice.Reporting.CrewTemplate, template_id,
+           authorize?: false,
+           tenant: org_id
+         ) do
+      {:ok, tmpl} ->
+        Ash.update!(tmpl, %{active: false},
+          action: :update,
+          authorize?: false,
+          tenant: org_id
+        )
+
+        templates = load_crew_templates(project.id, org_id, user)
+        {:noreply, assign(socket, :crew_templates, templates)}
+
+      {:error, _} ->
+        {:noreply, socket}
+    end
+  end
+
+  defp load_crew_templates(project_id, org_id, user) do
+    case Sitevoice.Reporting.list_crew_templates(project_id,
+           tenant: org_id,
+           actor: user,
+           authorize?: true
+         ) do
+      {:ok, templates} -> templates
+      _ -> []
+    end
+  end
+
+  defp presence(nil), do: nil
+  defp presence(""), do: nil
+  defp presence(s) when is_binary(s), do: String.trim(s) |> then(&if &1 == "", do: nil, else: &1)
+
   defp reload_memberships(socket) do
     user = socket.assigns.current_user
     org_id = socket.assigns.tenant
@@ -213,9 +306,14 @@ defmodule SitevoiceWeb.Projects.ShowLive do
             <div>
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
                 <div class="section-label" style="margin-bottom: 0;">Recent Logs</div>
-                <a href={~p"/projects/#{@project.id}/logs/new"} class="btn-primary" style="padding: 10px 18px; font-size: 12px;">
-                  + New Log
-                </a>
+                <div style="display: flex; gap: 8px;">
+                  <a href={~p"/projects/#{@project.id}/logs/today"} class="btn-primary" style="padding: 10px 18px; font-size: 12px;">
+                    Today's Log
+                  </a>
+                  <a href={~p"/projects/#{@project.id}/logs/new"} style="padding: 10px 18px; font-size: 12px; font-family: var(--font-mono); letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--wire); border-radius: 6px; color: var(--chalk); text-decoration: none; opacity: 0.7; display: inline-flex; align-items: center;">
+                    + Quick Submit
+                  </a>
+                </div>
               </div>
               <div class="card" style="padding: 0; overflow: hidden;">
                 <%= if @logs == [] do %>
@@ -239,6 +337,85 @@ defmodule SitevoiceWeb.Projects.ShowLive do
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.4; flex-shrink: 0;"><polyline points="9 18 15 12 9 6"/></svg>
                       </div>
                     </a>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+
+            <%!-- Right Column --%>
+            <div>
+
+            <%!-- Crew Templates Panel --%>
+            <div style="margin-bottom: 24px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <div class="section-label" style="margin-bottom: 0;">Crew Templates</div>
+                <%= if @current_user.role in [:foreman, :pm, :org_admin] do %>
+                  <button class="btn-secondary" style="padding: 6px 12px; font-size: 11px;" phx-click="open_crew_form">+ Add Crew</button>
+                <% end %>
+              </div>
+
+              <%= if @show_crew_form do %>
+                <div class="card" style="margin-bottom: 16px; border-color: var(--orange);">
+                  <%= if @crew_error do %>
+                    <div class="alert-error" style="margin-bottom: 12px; font-size: 12px;"><%= @crew_error %></div>
+                  <% end %>
+                  <form phx-submit="add_crew">
+                    <div class="form-group">
+                      <label class="form-label">Crew Name</label>
+                      <input class="form-input" type="text" name="crew[name]" placeholder="e.g. Foundation Crew A" style="font-size: 12px;" required />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Trade</label>
+                      <select class="form-select" name="crew[trade]" style="font-size: 12px;">
+                        <option value="general">General</option>
+                        <option value="concrete">Concrete</option>
+                        <option value="framing">Framing</option>
+                        <option value="electrical">Electrical</option>
+                        <option value="plumbing">Plumbing</option>
+                        <option value="steel">Steel</option>
+                        <option value="hvac">HVAC</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Subcontractor</label>
+                      <input class="form-input" type="text" name="crew[subcontractor]" placeholder="Company name (optional)" style="font-size: 12px;" />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Default Headcount</label>
+                      <input class="form-input" type="number" name="crew[headcount]" min="1" value="1" style="font-size: 12px; width: 80px;" />
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                      <button type="submit" class="btn-primary" style="padding: 8px 16px; font-size: 12px;">Add</button>
+                      <button type="button" class="btn-ghost" style="font-size: 12px; padding: 8px 0;" phx-click="close_crew_form">Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              <% end %>
+
+              <div class="card" style="padding: 0; overflow: hidden;">
+                <%= if @crew_templates == [] do %>
+                  <div style="padding: 20px; color: var(--chalk); opacity: 0.5; font-size: 12px; text-align: center; font-family: var(--font-mono); line-height: 1.6;">
+                    No crews yet.<br/>Add crews to pre-fill attendance each day.
+                  </div>
+                <% else %>
+                  <%= for tmpl <- @crew_templates do %>
+                    <div style="padding: 12px 16px; border-bottom: 1px solid rgba(61,79,101,0.3); display: flex; align-items: center; gap: 10px;">
+                      <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 12px; color: var(--white); font-weight: 500;"><%= tmpl.name %></div>
+                        <div style="font-size: 10px; color: var(--chalk); opacity: 0.4; font-family: var(--font-mono); margin-top: 2px;">
+                          <%= tmpl.trade %> · <%= tmpl.default_headcount %> workers
+                          <%= if tmpl.subcontractor, do: " · #{tmpl.subcontractor}" %>
+                        </div>
+                      </div>
+                      <%= if @current_user.role in [:foreman, :pm, :org_admin] do %>
+                        <button
+                          phx-click="deactivate_crew"
+                          phx-value-id={tmpl.id}
+                          style="background: none; border: none; cursor: pointer; color: var(--chalk); opacity: 0.3; padding: 4px; line-height: 1; font-size: 14px;"
+                          title="Remove crew template"
+                        >✕</button>
+                      <% end %>
+                    </div>
                   <% end %>
                 <% end %>
               </div>
@@ -331,6 +508,7 @@ defmodule SitevoiceWeb.Projects.ShowLive do
                 <% end %>
               </div>
             </div>
+            </div><%!-- /Right Column --%>
           </div>
         </div>
       </div>
