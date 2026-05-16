@@ -37,7 +37,8 @@ defmodule SitevoiceWeb.Logs.ShowLive do
          |> assign(:regenerating_pdf, false)
          |> assign(:editing, nil)
          |> assign(:edit_form, %{})
-         |> assign(:edit_confirmed, false)}
+         |> assign(:edit_confirmed, false)
+         |> assign(:pdf_toast, nil)}
 
       {:error, _} ->
         {:ok,
@@ -45,6 +46,11 @@ defmodule SitevoiceWeb.Logs.ShowLive do
          |> put_flash(:error, "Log not found.")
          |> push_navigate(to: ~p"/dashboard")}
     end
+  end
+
+  @impl true
+  def handle_event("dismiss_pdf_toast", _, socket) do
+    {:noreply, assign(socket, :pdf_toast, nil)}
   end
 
   @impl true
@@ -206,21 +212,29 @@ defmodule SitevoiceWeb.Logs.ShowLive do
 
   @impl true
   def handle_info({:pdf_regenerated, {:ok, updated_log}}, socket) do
+    Process.send_after(self(), :clear_pdf_toast, 6_000)
+
     {:noreply,
      socket
      |> assign(:log, updated_log)
      |> assign(:regenerating_pdf, false)
-     |> put_flash(:info, "PDF regenerated with latest photos.")}
+     |> assign(:pdf_toast, {:success, "PDF regenerated successfully. You can now download the updated report."})}
   end
 
   @impl true
   def handle_info({:pdf_regenerated, {:error, reason}}, socket) do
     Logger.error("PDF regeneration failed in ShowLive: #{inspect(reason)}")
+    Process.send_after(self(), :clear_pdf_toast, 8_000)
 
     {:noreply,
      socket
      |> assign(:regenerating_pdf, false)
-     |> put_flash(:error, "PDF regeneration failed. Please try again.")}
+     |> assign(:pdf_toast, {:error, "PDF regeneration failed. Please try again."})}
+  end
+
+  @impl true
+  def handle_info(:clear_pdf_toast, socket) do
+    {:noreply, assign(socket, :pdf_toast, nil)}
   end
 
   @impl true
@@ -232,6 +246,43 @@ defmodule SitevoiceWeb.Logs.ShowLive do
     ~H"""
     <div class="app-ui">
       <.nav current_user={@current_user} current_path="/logs" />
+
+      <%!-- PDF Toast Notification --%>
+      <%= if @pdf_toast do %>
+        <% {kind, message} = @pdf_toast %>
+        <div style={
+          "position: fixed; top: 24px; right: 24px; z-index: 9999; max-width: 420px; min-width: 300px; " <>
+          "padding: 16px 20px; border-radius: 8px; " <>
+          "display: flex; align-items: flex-start; gap: 12px; " <>
+          "box-shadow: 0 8px 32px rgba(0,0,0,0.5); " <>
+          "animation: fadeUp 0.3s ease both; " <>
+          if(kind == :success,
+            do: "background: #064e3b; border: 1px solid #10B981;",
+            else: "background: #450a0a; border: 1px solid #ef4444;"
+          )
+        }>
+          <%= if kind == :success do %>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" style="flex-shrink: 0; margin-top: 1px;"><polyline points="20 6 9 17 4 12"/></svg>
+          <% else %>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <% end %>
+          <div style="flex: 1;">
+            <div style={"font-size: 13px; font-weight: 700; margin-bottom: 3px; color: #{if kind == :success, do: "#10B981", else: "#ef4444"};"}>
+              <%= if kind == :success, do: "PDF Ready", else: "Regeneration Failed" %>
+            </div>
+            <div style="font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.5;"><%= message %></div>
+            <%= if kind == :success && @log.pdf_url do %>
+              <a href={@log.pdf_url} target="_blank"
+                 style="display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; font-size: 12px; font-weight: 600; color: #10B981; text-decoration: none; padding: 4px 10px; border: 1px solid #10B981; border-radius: 4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Download Updated PDF
+              </a>
+            <% end %>
+          </div>
+          <button phx-click="dismiss_pdf_toast" style="background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.5); padding: 0; line-height: 1; font-size: 18px; flex-shrink: 0;">&times;</button>
+        </div>
+      <% end %>
+
       <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
         <div style="max-width: 860px; margin: 0 auto;">
 
