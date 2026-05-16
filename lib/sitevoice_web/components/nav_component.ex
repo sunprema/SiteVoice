@@ -72,6 +72,7 @@ defmodule SitevoiceWeb.NavComponent do
   end
 
   attr :current_user, :map, default: nil
+  attr :current_organization, :map, default: nil
   attr :current_path, :string, default: "/"
 
   def nav(assigns) do
@@ -88,6 +89,14 @@ defmodule SitevoiceWeb.NavComponent do
           <li><a href={~p"/logs"} class={nav_active(@current_path, "/logs")}>Logs</a></li>
         <% end %>
         <li><a href={~p"/settings/profile"} class={nav_active(@current_path, "/settings")}>Settings</a></li>
+        <%= if @current_user do %>
+          <li class="app-nav-user-info">
+            <span class="app-nav-user-name"><%= @current_user.name %> · <%= format_role(@current_user.role) %></span>
+            <%= if @current_organization do %>
+              <span class="app-nav-org-name"><%= @current_organization.name %></span>
+            <% end %>
+          </li>
+        <% end %>
         <li><a href={~p"/sign-out"} class="app-nav-signout">Sign Out</a></li>
       </ul>
     </nav>
@@ -97,4 +106,10 @@ defmodule SitevoiceWeb.NavComponent do
   defp nav_active(current, path) do
     if String.starts_with?(current, path), do: "active", else: ""
   end
+
+  defp format_role(:foreman), do: "Foreman"
+  defp format_role(:pm), do: "PM"
+  defp format_role(:org_admin), do: "Admin"
+  defp format_role(:owner), do: "Owner"
+  defp format_role(role), do: role |> to_string() |> String.capitalize()
 end

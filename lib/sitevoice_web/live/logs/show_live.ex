@@ -245,7 +245,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
 
     ~H"""
     <div class="app-ui">
-      <.nav current_user={@current_user} current_path="/logs" />
+      <.nav current_user={@current_user} current_organization={@current_organization} current_path="/logs" />
 
       <%!-- PDF Toast Notification --%>
       <%= if @pdf_toast do %>

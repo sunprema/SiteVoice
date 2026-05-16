@@ -23,7 +23,18 @@ defmodule SitevoiceWeb.LiveUserAuth do
 
   def on_mount(:live_user_required, _params, _session, socket) do
     if socket.assigns[:current_user] do
-      {:cont, socket}
+      user = socket.assigns.current_user
+
+      org =
+        case Ash.get(Sitevoice.Accounts.Organization, user.organization_id,
+               actor: user,
+               authorize?: true
+             ) do
+          {:ok, org} -> org
+          _ -> nil
+        end
+
+      {:cont, assign(socket, :current_organization, org)}
     else
       {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/sign-in")}
     end

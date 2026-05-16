@@ -149,7 +149,7 @@ defmodule SitevoiceWeb.WeeklyReportsLive do
   def render(assigns) do
     ~H"""
     <div class="app-ui">
-      <.nav current_user={@current_user} current_path="/projects" />
+      <.nav current_user={@current_user} current_organization={@current_organization} current_path="/projects" />
       <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
         <div style="max-width: 1100px; margin: 0 auto;">
 

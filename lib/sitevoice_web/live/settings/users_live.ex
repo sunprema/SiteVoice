@@ -229,7 +229,7 @@ defmodule SitevoiceWeb.Settings.UsersLive do
   def render(assigns) do
     ~H"""
     <div class="app-ui">
-      <.nav current_user={@current_user} current_path="/settings" />
+      <.nav current_user={@current_user} current_organization={@current_organization} current_path="/settings" />
       <div class="app-page blueprint-bg orange-glow">
         <div style="display: flex; gap: 48px; align-items: flex-start; max-width: 1100px; margin: 0 auto;">
           <.settings_nav current="users" current_user={@current_user} />

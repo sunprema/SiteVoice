@@ -107,6 +107,33 @@ body.app-ui::before {
 }
 .app-nav-signout:hover { opacity: 0.8 !important; }
 
+.app-nav-user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  border-left: 1px solid var(--wire);
+  padding-left: 20px;
+  margin-left: 4px;
+}
+
+.app-nav-user-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--chalk);
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
+.app-nav-org-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--orange);
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
 /* ─── PAGE WRAPPER ─── */
 .app-page {
   padding-top: 72px;
