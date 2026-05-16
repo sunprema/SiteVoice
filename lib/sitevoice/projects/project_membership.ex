@@ -57,6 +57,12 @@ defmodule Sitevoice.Projects.ProjectMembership do
       primary? true
     end
 
+    read :list_for_project do
+      argument :project_id, :uuid, allow_nil?: false
+      filter expr(project_id == ^arg(:project_id))
+      prepare build(load: [:user])
+    end
+
     update :update_role do
       accept [:role]
     end
@@ -70,9 +76,10 @@ defmodule Sitevoice.Projects.ProjectMembership do
       authorize_if actor_attribute_equals(:role, :pm)
     end
 
-    policy action(:read) do
+    policy action_type(:read) do
       authorize_if actor_attribute_equals(:role, :org_admin)
       authorize_if actor_attribute_equals(:role, :pm)
+      authorize_if actor_attribute_equals(:role, :owner)
     end
 
     policy action(:update_role) do

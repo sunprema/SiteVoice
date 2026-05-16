@@ -103,6 +103,10 @@ defmodule Sitevoice.Accounts.User do
       constraints: [one_of: [:en, :es]],
       default: :en
 
+    attribute :active, :boolean, allow_nil?: false, public?: true, default: true
+
+    attribute :invited_at, :utc_datetime_usec, allow_nil?: true, public?: false
+
     attribute :confirmed_at, :utc_datetime_usec
     timestamps()
   end
@@ -157,6 +161,8 @@ defmodule Sitevoice.Accounts.User do
         allow_nil? false
         sensitive? true
       end
+
+      filter expr(active == true)
 
       prepare Sitevoice.Accounts.Preparations.SetTenantMetadata
       prepare AshAuthentication.Strategy.Password.SignInPreparation
@@ -238,7 +244,9 @@ defmodule Sitevoice.Accounts.User do
     create :invite do
       accept [:email, :name, :role, :preferred_language]
       change set_attribute(:organization_id, actor(:organization_id))
+      change set_attribute(:invited_at, &DateTime.utc_now/0)
       change Sitevoice.Accounts.Changes.HashPassword
+      change Sitevoice.Accounts.Changes.SendInvitationEmail
     end
 
     action :request_password_reset_token do
@@ -309,6 +317,16 @@ defmodule Sitevoice.Accounts.User do
       accept [:role]
     end
 
+    update :deactivate do
+      accept []
+      change set_attribute(:active, false)
+    end
+
+    update :reactivate do
+      accept []
+      change set_attribute(:active, true)
+    end
+
     destroy :destroy
   end
 
@@ -319,6 +337,7 @@ defmodule Sitevoice.Accounts.User do
 
     policy action(:invite) do
       authorize_if actor_attribute_equals(:role, :org_admin)
+      authorize_if actor_attribute_equals(:role, :owner)
     end
 
     policy action(:read) do
@@ -338,6 +357,17 @@ defmodule Sitevoice.Accounts.User do
     policy action(:destroy) do
       forbid_if expr(id == ^actor(:id))
       authorize_if actor_attribute_equals(:role, :org_admin)
+    end
+
+    policy action(:deactivate) do
+      forbid_if expr(id == ^actor(:id))
+      authorize_if actor_attribute_equals(:role, :org_admin)
+      authorize_if actor_attribute_equals(:role, :owner)
+    end
+
+    policy action(:reactivate) do
+      authorize_if actor_attribute_equals(:role, :org_admin)
+      authorize_if actor_attribute_equals(:role, :owner)
     end
   end
 end

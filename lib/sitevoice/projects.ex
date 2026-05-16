@@ -13,6 +13,9 @@ defmodule Sitevoice.Projects do
 
     resource Sitevoice.Projects.ProjectMembership do
       define :add_member, action: :add_member
+      define :list_project_memberships, action: :list_for_project, args: [:project_id]
+      define :update_membership_role, action: :update_role
+      define :remove_membership, action: :remove_member
     end
   end
 end

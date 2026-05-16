@@ -42,6 +42,9 @@ defmodule SitevoiceWeb.Router do
       live "/logs", Logs.IndexLive
       live "/logs/:id", Logs.ShowLive
       live "/logs/:id/processing", Logs.ProcessingLive
+      live "/settings/profile", Settings.ProfileLive
+      live "/settings/users", Settings.UsersLive
+      live "/settings/organization", Settings.OrganizationLive
     end
 
     post "/rpc/run", AshTypescriptRpcController, :run

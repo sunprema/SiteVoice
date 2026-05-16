@@ -2,7 +2,7 @@
 /* Extracted from docs/mockups/sitevoice-landing.html */
 
 /* ─── NAV ─── */
-nav {
+.landing-nav {
   position: fixed;
   top: 0;
   left: 0;
@@ -166,7 +166,7 @@ h1 .rule {
   font-size: 15px;
   letter-spacing: 1px;
   padding: 16px 32px;
-  clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  /* clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%); */
   transition: background 0.2s, transform 0.2s;
   text-transform: uppercase;
 }
@@ -683,7 +683,7 @@ footer {
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 768px) {
-  nav { padding: 16px 20px; }
+  .landing-nav { padding: 16px 20px; }
   .nav-links { display: none; }
   .landing-hero { grid-template-columns: 1fr; padding: 100px 20px 60px; gap: 60px; }
   .hero-right { display: none; }

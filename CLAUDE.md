@@ -102,6 +102,7 @@ Update this table as slices are completed:
 | 08    | LiveView       | ✅ Complete    |
 | 09    | Integrations   | ⬜ Not started |
 | 10    | Mobile         | ⬜ Not started |
+| 11    | User Management| ✅ Complete    |
 
 ---
 
