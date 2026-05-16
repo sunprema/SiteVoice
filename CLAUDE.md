@@ -103,6 +103,7 @@ Update this table as slices are completed:
 | 09    | Integrations   | ⬜ Not started |
 | 10    | Mobile         | ⬜ Not started |
 | 11    | User Management| ✅ Complete    |
+| 12    | Weekly Report  | ✅ Complete    |
 
 ---
 

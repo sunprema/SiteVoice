@@ -317,6 +317,9 @@ defmodule SitevoiceWeb.Projects.ShowLive do
                   <a href={~p"/projects/#{@project.id}/logs/new"} style="padding: 10px 18px; font-size: 12px; font-family: var(--font-mono); letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--wire); border-radius: 6px; color: var(--chalk); text-decoration: none; opacity: 0.7; display: inline-flex; align-items: center;">
                     + Quick Submit
                   </a>
+                  <a href={~p"/projects/#{@project.id}/weekly-reports"} style="padding: 10px 18px; font-size: 12px; font-family: var(--font-mono); letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--wire); border-radius: 6px; color: var(--chalk); text-decoration: none; opacity: 0.7; display: inline-flex; align-items: center;">
+                    Weekly Reports
+                  </a>
                 </div>
               </div>
               <div class="card" style="padding: 0; overflow: hidden;">

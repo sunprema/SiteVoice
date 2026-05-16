@@ -7,12 +7,9 @@ defmodule Sitevoice.Steps.FetchEntries do
     Logger.debug("FetchEntries loading log entries", log_id: log_id, org_id: org_id)
 
     result =
-      Ash.read(Sitevoice.Reporting.LogEntry,
-        action: :for_log,
-        arguments: %{daily_log_id: log_id},
-        authorize?: false,
-        tenant: org_id
-      )
+      Sitevoice.Reporting.LogEntry
+      |> Ash.Query.for_read(:for_log, %{daily_log_id: log_id})
+      |> Ash.read(authorize?: false, tenant: org_id)
 
     case result do
       {:ok, entries} ->

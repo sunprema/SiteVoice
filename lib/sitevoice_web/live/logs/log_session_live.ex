@@ -18,7 +18,7 @@ defmodule SitevoiceWeb.Logs.LogSessionLive do
              actor: user,
              authorize?: true
            ),
-         {:ok, log_or_nil} <- find_today_log(user, org_id) do
+         {:ok, log_or_nil} <- find_today_log(user, org_id, project_id) do
       socket =
         socket
         |> assign(:tenant, org_id)
@@ -199,7 +199,7 @@ defmodule SitevoiceWeb.Logs.LogSessionLive do
     if photo_entries == [] do
       {:noreply, assign(socket, :error, "Please select at least one photo.")}
     else
-      new_entries =
+      results =
         consume_uploaded_entries(socket, :photos, fn %{path: path}, entry ->
           key =
             "#{org_id}/photos/#{project.id}/#{log.id}/#{Ash.UUID.generate()}-#{entry.client_name}"
@@ -218,20 +218,32 @@ defmodule SitevoiceWeb.Logs.LogSessionLive do
                    actor: user,
                    authorize?: true
                  ) do
-              {:ok, log_entry} -> {:ok, log_entry}
-              {:error, reason} -> {:ok, {:error, reason}}
+              {:ok, log_entry} ->
+                {:ok, {:ok, log_entry}}
+
+              {:error, reason} ->
+                Logger.error("add_photo_entry failed for #{entry.client_name}: #{inspect(reason)}")
+                {:ok, {:error, "Failed to save photo: #{format_error(reason)}"}}
             end
           else
             {:error, reason} ->
-              Logger.error("Photo upload failed for #{entry.client_name}: #{inspect(reason)}")
-              {:ok, nil}
+              Logger.error("Photo storage failed for #{entry.client_name}: #{inspect(reason)}")
+              {:ok, {:error, "Failed to upload photo: #{inspect(reason)}"}}
           end
         end)
 
-      valid_entries = Enum.reject(new_entries, &is_nil/1) |> Enum.reject(&match?({:error, _}, &1))
-      entries = socket.assigns.entries ++ valid_entries
+      errors = for {:error, msg} <- results, do: msg
+      new_entries = for {:ok, entry} <- results, do: entry
+      entries = socket.assigns.entries ++ new_entries
 
-      {:noreply, socket |> assign(:entries, entries) |> assign(:error, nil)}
+      socket =
+        if errors == [] do
+          assign(socket, :error, nil)
+        else
+          assign(socket, :error, Enum.join(errors, "; "))
+        end
+
+      {:noreply, assign(socket, :entries, entries)}
     end
   end
 
@@ -705,15 +717,20 @@ defmodule SitevoiceWeb.Logs.LogSessionLive do
 
   # --- Helpers ---
 
-  defp find_today_log(user, org_id) do
-    case Sitevoice.Reporting.get_today_log_for_foreman(user.id, Date.utc_today(),
-           tenant: org_id,
-           actor: user,
-           authorize?: true
-         ) do
-      {:ok, log} -> {:ok, log}
-      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Query.NotFound{}]}} -> {:ok, nil}
-      {:error, %Ash.Error.Query.NotFound{}} -> {:ok, nil}
+  defp find_today_log(user, org_id, project_id) do
+    require Ash.Query
+    today = Date.utc_today()
+
+    query =
+      Sitevoice.Reporting.DailyLog
+      |> Ash.Query.for_read(:list_for_foreman, %{foreman_id: user.id})
+      |> Ash.Query.filter(date == ^today and project_id == ^project_id)
+      |> Ash.Query.sort(inserted_at: :desc)
+      |> Ash.Query.limit(1)
+
+    case Ash.read(query, tenant: org_id, actor: user, authorize?: true) do
+      {:ok, [log | _]} -> {:ok, log}
+      {:ok, []} -> {:ok, nil}
       {:error, _} = err -> err
     end
   end

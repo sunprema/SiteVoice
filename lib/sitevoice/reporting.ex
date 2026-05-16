@@ -42,5 +42,10 @@ defmodule Sitevoice.Reporting do
       define :list_attendances_for_log, action: :list_for_log, args: [:daily_log_id]
       define :update_attendance, action: :update_attendance
     end
+
+    resource Sitevoice.Reporting.WeeklyReport do
+      define :list_weekly_reports_for_project, action: :list_for_project, args: [:project_id]
+      define :get_weekly_report_by_week, action: :get_by_week, args: [:project_id, :week_start]
+    end
   end
 end
