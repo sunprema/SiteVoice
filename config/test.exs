@@ -12,6 +12,7 @@ config :ash, policies: [show_policy_breakdowns?: true], disable_async?: true
 
 config :sitevoice, :openai_req_options, plug: {Req.Test, :whisper_req}
 config :sitevoice, :anthropic_req_options, plug: {Req.Test, :claude_req}
+config :sitevoice, :procore_req_options, plug: {Req.Test, :procore_req}
 
 config :sitevoice, :imprintor_mod, Sitevoice.Test.ImprintorStub
 

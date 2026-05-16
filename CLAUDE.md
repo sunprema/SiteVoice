@@ -100,7 +100,7 @@ Update this table as slices are completed:
 | 06    | Real-time      | ✅ Complete    |
 | 07    | Notifications  | ✅ Complete    |
 | 08    | LiveView       | ✅ Complete    |
-| 09    | Integrations   | ⬜ Not started |
+| 09    | Integrations   | ✅ Complete    |
 | 10    | Mobile         | ⬜ Not started |
 | 11    | User Management| ✅ Complete    |
 | 12    | Weekly Report  | ✅ Complete    |
