@@ -6,6 +6,7 @@ defmodule Sitevoice.Reporting do
     resource Sitevoice.Reporting.DailyLog do
       define :get_log, action: :read, get_by: [:id]
       define :submit_recording, action: :submit_recording
+      define :submit_text_report, action: :submit_text_report
       define :approve_and_submit, action: :approve_and_submit
       define :list_logs_for_project, action: :list_for_project, args: [:project_id]
       define :list_logs, action: :list_all, args: [:project_id, :status]

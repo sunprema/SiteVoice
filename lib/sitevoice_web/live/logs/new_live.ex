@@ -24,6 +24,8 @@ defmodule SitevoiceWeb.Logs.NewLive do
           |> assign(:tenant, org_id)
           |> assign(:project, project)
           |> assign(:error, nil)
+          |> assign(:mode, :audio)
+          |> assign(:typed_report, "")
           |> allow_upload(:audio,
             accept: ~w(.m4a .mp3 .wav .ogg),
             max_entries: 1,
@@ -46,15 +48,27 @@ defmodule SitevoiceWeb.Logs.NewLive do
   end
 
   @impl true
-  def handle_event("validate", _params, socket) do
-    {:noreply, socket}
+  def handle_event("set_mode", %{"mode" => mode}, socket) do
+    {:noreply, assign(socket, :mode, String.to_existing_atom(mode))}
   end
 
-  def handle_event("submit", _params, socket) do
+  def handle_event("validate", params, socket) do
+    typed = Map.get(params, "report_text", socket.assigns.typed_report)
+    {:noreply, assign(socket, :typed_report, typed)}
+  end
+
+  def handle_event("submit", params, socket) do
     user = socket.assigns.current_user
     org_id = socket.assigns.tenant
     project = socket.assigns.project
 
+    case socket.assigns.mode do
+      :audio -> submit_audio(socket, params, user, org_id, project)
+      :text -> submit_text(socket, params, user, org_id, project)
+    end
+  end
+
+  defp submit_audio(socket, _params, user, org_id, project) do
     audio_entries = socket.assigns.uploads.audio.entries
 
     if audio_entries == [] do
@@ -83,6 +97,33 @@ defmodule SitevoiceWeb.Logs.NewLive do
 
         {:error, reason} ->
           {:noreply, assign(socket, :error, "Upload failed: #{inspect(reason)}")}
+      end
+    end
+  end
+
+  defp submit_text(socket, params, user, org_id, project) do
+    text = String.trim(Map.get(params, "report_text", ""))
+
+    if text == "" do
+      {:noreply, assign(socket, :error, "Please enter a report.")}
+    else
+      log_params = %{
+        date: Date.utc_today(),
+        transcript: text,
+        project_id: project.id
+      }
+
+      case Sitevoice.Reporting.submit_text_report(log_params,
+             tenant: org_id,
+             actor: user,
+             authorize?: true
+           ) do
+        {:ok, log} ->
+          consume_photos(socket, user, org_id, project.id, log.id)
+          {:noreply, push_navigate(socket, to: ~p"/logs/#{log.id}/processing")}
+
+        {:error, error} ->
+          {:noreply, assign(socket, :error, format_error(error))}
       end
     end
   end
@@ -137,12 +178,15 @@ defmodule SitevoiceWeb.Logs.NewLive do
   def render(assigns) do
     audio_entries = assigns.uploads.audio.entries
     has_audio = audio_entries != []
+    has_text = String.trim(assigns.typed_report) != ""
+    can_submit = (assigns.mode == :audio and has_audio) or (assigns.mode == :text and has_text)
 
     assigns =
       assigns
       |> assign(:has_audio, has_audio)
       |> assign(:audio_entries, audio_entries)
       |> assign(:photo_entries, assigns.uploads.photos.entries)
+      |> assign(:can_submit, can_submit)
 
     ~H"""
     <div class="app-ui">
@@ -154,8 +198,30 @@ defmodule SitevoiceWeb.Logs.NewLive do
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
             <%= @project.name %>
           </a>
-          <div class="section-label" style="margin-top: 12px;">Submit Recording</div>
-          <div class="display-heading">New Daily Log</div>
+          <div class="section-label" style="margin-top: 12px;">New Daily Log</div>
+          <div class="display-heading">Submit Report</div>
+        </div>
+
+        <%!-- Mode toggle --%>
+        <div style="display: flex; gap: 0; margin-bottom: 28px; border: 1px solid var(--wire); border-radius: 8px; overflow: hidden; animation: fadeUp 0.6s 0.1s ease both;">
+          <button
+            type="button"
+            phx-click="set_mode"
+            phx-value-mode="audio"
+            style={"flex: 1; padding: 12px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; #{if @mode == :audio, do: "background: var(--orange); color: var(--ink);", else: "background: transparent; color: var(--chalk); opacity: 0.6;"}"}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 6px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+            Audio Recording
+          </button>
+          <button
+            type="button"
+            phx-click="set_mode"
+            phx-value-mode="text"
+            style={"flex: 1; padding: 12px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; border: none; border-left: 1px solid var(--wire); cursor: pointer; transition: all 0.2s; #{if @mode == :text, do: "background: var(--orange); color: var(--ink);", else: "background: transparent; color: var(--chalk); opacity: 0.6;"}"}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 6px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Type Report
+          </button>
         </div>
 
         <%= if @error do %>
@@ -163,38 +229,54 @@ defmodule SitevoiceWeb.Logs.NewLive do
         <% end %>
 
         <form phx-submit="submit" phx-change="validate">
-          <%!-- Audio Upload --%>
-          <div class="card" style="margin-bottom: 24px;">
-            <div class="section-label">Audio Recording</div>
-            <div style="font-size: 13px; color: var(--chalk); opacity: 0.6; margin-bottom: 16px;">
-              Upload your site walkthrough recording (.m4a, .mp3, .wav, .ogg — max 50MB)
-            </div>
-            <.live_file_input upload={@uploads.audio} style="display:none" id="audio-input" />
-            <label for={@uploads.audio.ref} class="upload-zone" style="display: block; cursor: pointer;">
-              <%= if @audio_entries == [] do %>
-                <div style="color: var(--chalk); opacity: 0.5;">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 8px; display: block;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-                  <div style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">Click to select audio file</div>
-                </div>
-              <% else %>
-                <%= for entry <- @audio_entries do %>
-                  <div style="display: flex; align-items: center; gap: 12px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-                    <div>
-                      <div style="font-size: 13px; color: var(--white);"><%= entry.client_name %></div>
-                      <div style="font-family: var(--font-mono); font-size: 11px; color: var(--chalk); opacity: 0.5;"><%= trunc(entry.client_size / 1024) %> KB</div>
+          <%= if @mode == :audio do %>
+            <%!-- Audio Upload --%>
+            <div class="card" style="margin-bottom: 24px;">
+              <div class="section-label">Audio Recording</div>
+              <div style="font-size: 13px; color: var(--chalk); opacity: 0.6; margin-bottom: 16px;">
+                Upload your site walkthrough recording (.m4a, .mp3, .wav, .ogg — max 50MB)
+              </div>
+              <.live_file_input upload={@uploads.audio} style="display:none" id="audio-input" />
+              <label for={@uploads.audio.ref} class="upload-zone" style="display: block; cursor: pointer;">
+                <%= if @audio_entries == [] do %>
+                  <div style="color: var(--chalk); opacity: 0.5;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 8px; display: block;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                    <div style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">Click to select audio file</div>
+                  </div>
+                <% else %>
+                  <%= for entry <- @audio_entries do %>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                      <div>
+                        <div style="font-size: 13px; color: var(--white);"><%= entry.client_name %></div>
+                        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--chalk); opacity: 0.5;"><%= trunc(entry.client_size / 1024) %> KB</div>
+                      </div>
                     </div>
-                  </div>
-                  <div style="margin-top: 10px; background: var(--wire); border-radius: 4px; height: 4px; overflow: hidden;">
-                    <div style={"background: var(--orange); width: #{entry.progress}%; height: 100%; transition: width 0.3s;"}></div>
-                  </div>
+                    <div style="margin-top: 10px; background: var(--wire); border-radius: 4px; height: 4px; overflow: hidden;">
+                      <div style={"background: var(--orange); width: #{entry.progress}%; height: 100%; transition: width 0.3s;"}></div>
+                    </div>
+                  <% end %>
                 <% end %>
+              </label>
+              <%= for err <- upload_errors(@uploads.audio) do %>
+                <div class="alert-error" style="margin-top: 8px; font-size: 12px;"><%= friendly_error(err) %></div>
               <% end %>
-            </label>
-            <%= for err <- upload_errors(@uploads.audio) do %>
-              <div class="alert-error" style="margin-top: 8px; font-size: 12px;"><%= friendly_error(err) %></div>
-            <% end %>
-          </div>
+            </div>
+          <% else %>
+            <%!-- Text Report --%>
+            <div class="card" style="margin-bottom: 24px;">
+              <div class="section-label">Report Text</div>
+              <div style="font-size: 13px; color: var(--chalk); opacity: 0.6; margin-bottom: 16px;">
+                Type your daily site report below. Claude will structure it into the standard log format.
+              </div>
+              <textarea
+                name="report_text"
+                placeholder="Describe today's work: labor on site, progress made, equipment used, materials delivered, any delays or safety notes..."
+                style="width: 100%; min-height: 200px; background: var(--ink); border: 1px solid var(--wire); border-radius: 6px; color: var(--chalk); font-size: 14px; line-height: 1.6; padding: 14px; resize: vertical; font-family: var(--font-sans); box-sizing: border-box; outline: none;"
+                phx-debounce="300"
+              ><%= @typed_report %></textarea>
+            </div>
+          <% end %>
 
           <%!-- Photos Upload --%>
           <div class="card" style="margin-bottom: 32px;">
@@ -221,11 +303,11 @@ defmodule SitevoiceWeb.Logs.NewLive do
           <button
             type="submit"
             class="btn-primary"
-            disabled={not @has_audio}
-            style={"width: 100%; justify-content: center; #{if not @has_audio, do: "opacity: 0.4; cursor: not-allowed;", else: ""}"}
+            disabled={not @can_submit}
+            style={"width: 100%; justify-content: center; #{if not @can_submit, do: "opacity: 0.4; cursor: not-allowed;", else: ""}"}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-            Submit Recording
+            <%= if @mode == :audio, do: "Submit Recording", else: "Submit Report" %>
           </button>
         </form>
         </div>

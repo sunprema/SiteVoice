@@ -87,6 +87,22 @@ defmodule Sitevoice.Reporting.DailyLog do
       change Sitevoice.Reporting.Changes.EnqueueProcessing
     end
 
+    create :submit_text_report do
+      accept [:date, :transcript, :weather]
+
+      argument :project_id, :uuid, allow_nil?: false
+
+      upsert? true
+      upsert_identity :unique_log_per_day
+      upsert_fields [:transcript, :weather, :status, :updated_at]
+
+      change set_attribute(:organization_id, actor(:organization_id))
+      change set_attribute(:foreman_id, actor(:id))
+      change set_attribute(:status, :processing)
+      change set_attribute(:project_id, arg(:project_id))
+      change Sitevoice.Reporting.Changes.EnqueueTextProcessing
+    end
+
     update :apply_transcript do
       accept [:transcript]
       change set_attribute(:status, :processing)
@@ -188,7 +204,7 @@ defmodule Sitevoice.Reporting.DailyLog do
   end
 
   policies do
-    policy action(:submit_recording) do
+    policy action([:submit_recording, :submit_text_report]) do
       authorize_if actor_attribute_equals(:role, :foreman)
       authorize_if actor_attribute_equals(:role, :pm)
       authorize_if actor_attribute_equals(:role, :org_admin)

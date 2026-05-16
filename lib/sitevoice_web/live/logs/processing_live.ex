@@ -35,7 +35,8 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
          |> assign(:log, log)
          |> assign(:log_id, log_id)
          |> assign(:report_ready, report_ready)
-         |> assign(:step_statuses, step_statuses)}
+         |> assign(:step_statuses, step_statuses)
+         |> assign(:is_text_report, is_nil(log.audio_key))}
 
       {:error, _} ->
         {:ok,
@@ -90,12 +91,12 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
           <%!-- Step List --%>
           <div style="display: flex; flex-direction: column; gap: 10px; text-align: left; margin-bottom: 32px; animation: fadeUp 0.6s 0.3s ease both;">
             <.proc_step
-              title="Audio Uploaded"
+              title={if @is_text_report, do: "Report Typed", else: "Audio Uploaded"}
               status={:done}
-              icon="upload"
+              icon={if @is_text_report, do: "edit", else: "upload"}
             />
             <.proc_step
-              title="Transcription (Whisper AI)"
+              title={if @is_text_report, do: "Ready for AI Structuring", else: "Transcription (Whisper AI)"}
               status={step_status(@step_statuses, "transcribed")}
               icon="wave"
             />
@@ -161,6 +162,17 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
       <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+    """
+  end
+
+  defp step_svg("edit") do
+    assigns = %{}
+
+    ~H"""
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
     </svg>
     """
   end
