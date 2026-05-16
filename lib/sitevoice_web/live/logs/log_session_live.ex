@@ -64,7 +64,9 @@ defmodule SitevoiceWeb.Logs.LogSessionLive do
 
       {:ok, socket}
     else
-      _ ->
+      error ->
+        Logger.error("LogSessionLive mount failed for user=#{socket.assigns.current_user.id} project_id=#{project_id}: #{inspect(error)}")
+
         {:ok,
          socket
          |> put_flash(:error, "Project not found.")
@@ -710,6 +712,7 @@ defmodule SitevoiceWeb.Logs.LogSessionLive do
            authorize?: true
          ) do
       {:ok, log} -> {:ok, log}
+      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Query.NotFound{}]}} -> {:ok, nil}
       {:error, %Ash.Error.Query.NotFound{}} -> {:ok, nil}
       {:error, _} = err -> err
     end

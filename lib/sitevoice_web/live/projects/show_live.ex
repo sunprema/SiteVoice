@@ -5,6 +5,8 @@ defmodule SitevoiceWeb.Projects.ShowLive do
 
   on_mount {SitevoiceWeb.LiveUserAuth, :live_user_required}
 
+  require Logger
+
   @impl true
   def mount(%{"id" => project_id}, _session, socket) do
     user = socket.assigns.current_user
@@ -60,7 +62,9 @@ defmodule SitevoiceWeb.Projects.ShowLive do
        |> assign(:show_crew_form, false)
        |> assign(:crew_error, nil)}
     else
-      _ ->
+      error ->
+        Logger.error("Projects.ShowLive mount failed for user=#{socket.assigns.current_user.id} project_id=#{project_id}: #{inspect(error)}")
+
         {:ok,
          socket
          |> put_flash(:error, "Project not found.")

@@ -5,6 +5,8 @@ defmodule SitevoiceWeb.Logs.NewLive do
 
   on_mount {SitevoiceWeb.LiveUserAuth, :live_user_required}
 
+  require Logger
+
   @impl true
   def mount(%{"project_id" => project_id}, _session, socket) do
     user = socket.assigns.current_user
@@ -39,7 +41,9 @@ defmodule SitevoiceWeb.Logs.NewLive do
 
         {:ok, socket}
 
-      _ ->
+      error ->
+        Logger.error("Logs.NewLive mount failed for user=#{socket.assigns.current_user.id} project_id=#{project_id}: #{inspect(error)}")
+
         {:ok,
          socket
          |> put_flash(:error, "Project not found.")
@@ -152,8 +156,6 @@ defmodule SitevoiceWeb.Logs.NewLive do
   end
 
   defp consume_photos(socket, user, org_id, project_id, log_id) do
-    require Logger
-
     consume_uploaded_entries(socket, :photos, fn %{path: path}, entry ->
       key = "#{org_id}/photos/#{project_id}/#{log_id}/#{Ash.UUID.generate()}-#{entry.client_name}"
 
