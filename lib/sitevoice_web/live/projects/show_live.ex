@@ -287,15 +287,15 @@ defmodule SitevoiceWeb.Projects.ShowLive do
     ~H"""
     <div class="app-ui">
       <.nav current_user={@current_user} current_organization={@current_organization} current_path="/projects" />
-      <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
-        <div style="max-width: 1000px; margin: 0 auto;">
-          <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
+      <div class="app-page blueprint-bg orange-glow">
+        <div style="max-width: 1000px; margin: 0 auto; padding: 40px 24px;">
+          <div style="margin-bottom: 32px;">
             <a href={~p"/projects"} class="chevron-link" style="margin-bottom: 16px; display: inline-flex;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
               All Projects
             </a>
             <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 12px;">
-              <div class="display-heading"><%= @project.name %></div>
+              <div class="display-heading" style="font-size: 26px;"><%= @project.name %></div>
               <span style="font-family: var(--font-mono); font-size: 12px; color: var(--orange); background: rgba(255,92,0,0.1); border: 1px solid rgba(255,92,0,0.3); padding: 4px 12px; border-radius: 4px; letter-spacing: 2px;">
                 <%= @project.code %>
               </span>

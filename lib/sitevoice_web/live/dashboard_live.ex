@@ -115,7 +115,7 @@ defmodule SitevoiceWeb.DashboardLive do
     ~H"""
     <div class="app-ui">
       <.nav current_user={@current_user} current_organization={@current_organization} current_path="/dashboard" />
-      <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
+      <div class="app-page blueprint-bg orange-glow">
         <%= if @view == :foreman do %>
           <.foreman_view {assigns} />
         <% else %>
@@ -128,10 +128,10 @@ defmodule SitevoiceWeb.DashboardLive do
 
   defp foreman_view(assigns) do
     ~H"""
-    <div style="max-width: 800px; margin: 0 auto;">
-      <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
+    <div style="max-width: 800px; margin: 0 auto; padding: 40px 24px;">
+      <div style="margin-bottom: 32px;">
         <div class="section-label">Welcome Back</div>
-        <div class="display-heading"><%= greeting() %>, <%= first_name(@current_user.name) %></div>
+        <div class="display-heading" style="font-size: 26px;"><%= greeting() %>, <%= first_name(@current_user.name) %></div>
         <div style="font-family: var(--font-mono); font-size: 12px; color: var(--chalk); opacity: 0.5; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px;">
           <%= @current_user.role %> · <%= Date.utc_today() |> Calendar.strftime("%B %d, %Y") %>
         </div>
@@ -232,10 +232,10 @@ defmodule SitevoiceWeb.DashboardLive do
 
   defp pm_view(assigns) do
     ~H"""
-    <div style="max-width: 900px; margin: 0 auto;">
-      <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
+    <div style="max-width: 900px; margin: 0 auto; padding: 40px 24px;">
+      <div style="margin-bottom: 32px;">
         <div class="section-label">PM Dashboard</div>
-        <div class="display-heading"><%= greeting() %>, <%= first_name(@current_user.name) %></div>
+        <div class="display-heading" style="font-size: 26px;"><%= greeting() %>, <%= first_name(@current_user.name) %></div>
         <div style="font-family: var(--font-mono); font-size: 12px; color: var(--chalk); opacity: 0.5; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px;">
           <%= Date.utc_today() |> Calendar.strftime("%B %d, %Y") %> · <%= @today_total %> Reports Today
         </div>

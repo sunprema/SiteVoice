@@ -371,17 +371,17 @@ defmodule SitevoiceWeb.Logs.LogSessionLive do
     ~H"""
     <div class="app-ui">
       <.nav current_user={@current_user} current_organization={@current_organization} current_path="/projects" />
-      <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
-        <div style="max-width: 760px; margin: 0 auto;">
+      <div class="app-page blueprint-bg orange-glow">
+        <div style="max-width: 760px; margin: 0 auto; padding: 40px 24px;">
 
           <%!-- Header --%>
-          <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
+          <div style="margin-bottom: 32px;">
             <a href={~p"/projects/#{@project.id}"} class="chevron-link" style="margin-bottom: 16px; display: inline-flex;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
               <%= @project.name %>
             </a>
             <div class="section-label" style="margin-top: 12px;">Daily Log Session</div>
-            <div class="display-heading"><%= Calendar.strftime(Date.utc_today(), "%B %d, %Y") %></div>
+            <div class="display-heading" style="font-size: 26px;"><%= Calendar.strftime(Date.utc_today(), "%B %d, %Y") %></div>
           </div>
 
           <%= if @error do %>
@@ -390,7 +390,7 @@ defmodule SitevoiceWeb.Logs.LogSessionLive do
 
           <%= if @page_state == :no_log do %>
             <%!-- Start log CTA --%>
-            <div class="card" style="text-align: center; padding: 60px 40px; animation: fadeUp 0.6s 0.1s ease both;">
+            <div class="card" style="text-align: center; padding: 60px 40px;">
               <div style="width: 64px; height: 64px; background: rgba(255,107,53,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
               </div>
@@ -595,7 +595,7 @@ defmodule SitevoiceWeb.Logs.LogSessionLive do
 
               <%!-- Add panel --%>
               <div style="position: sticky; top: 24px;">
-                <div class="card" style="animation: fadeUp 0.6s 0.15s ease both;">
+                <div class="card">
                   <div class="section-label" style="margin-bottom: 16px;">Add Entry</div>
 
                   <%!-- Tab bar --%>

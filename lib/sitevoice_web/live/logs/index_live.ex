@@ -57,11 +57,11 @@ defmodule SitevoiceWeb.Logs.IndexLive do
     ~H"""
     <div class="app-ui">
       <.nav current_user={@current_user} current_organization={@current_organization} current_path="/logs" />
-      <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
-        <div style="max-width: 1100px; margin: 0 auto;">
-        <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
+      <div class="app-page blueprint-bg orange-glow">
+        <div style="max-width: 1100px; margin: 0 auto; padding: 40px 24px;">
+        <div style="margin-bottom: 32px;">
           <div class="section-label">All Logs</div>
-          <div class="display-heading">PM Dashboard</div>
+          <div class="display-heading" style="font-size: 26px;">Logs</div>
         </div>
 
         <%!-- Filter Bar --%>

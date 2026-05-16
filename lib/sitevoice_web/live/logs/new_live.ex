@@ -193,19 +193,19 @@ defmodule SitevoiceWeb.Logs.NewLive do
     ~H"""
     <div class="app-ui">
       <.nav current_user={@current_user} current_organization={@current_organization} current_path="/projects" />
-      <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
-        <div style="max-width: 700px; margin: 0 auto;">
-        <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
+      <div class="app-page blueprint-bg orange-glow">
+        <div style="max-width: 700px; margin: 0 auto; padding: 40px 24px;">
+        <div style="margin-bottom: 32px;">
           <a href={~p"/projects/#{@project.id}"} class="chevron-link" style="margin-bottom: 16px; display: inline-flex;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
             <%= @project.name %>
           </a>
           <div class="section-label" style="margin-top: 12px;">New Daily Log</div>
-          <div class="display-heading">Submit Report</div>
+          <div class="display-heading" style="font-size: 26px;">Submit Report</div>
         </div>
 
         <%!-- Mode toggle --%>
-        <div style="display: flex; gap: 0; margin-bottom: 28px; border: 1px solid var(--wire); border-radius: 8px; overflow: hidden; animation: fadeUp 0.6s 0.1s ease both;">
+        <div style="display: flex; gap: 0; margin-bottom: 28px; border: 1px solid var(--wire); border-radius: 8px; overflow: hidden;">
           <button
             type="button"
             phx-click="set_mode"

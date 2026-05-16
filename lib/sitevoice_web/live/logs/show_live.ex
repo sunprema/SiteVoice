@@ -255,7 +255,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
           "padding: 16px 20px; border-radius: 8px; " <>
           "display: flex; align-items: flex-start; gap: 12px; " <>
           "box-shadow: 0 8px 32px rgba(0,0,0,0.5); " <>
-          "animation: fadeUp 0.3s ease both; " <>
+          "" <>
           if(kind == :success,
             do: "background: #064e3b; border: 1px solid #10B981;",
             else: "background: #450a0a; border: 1px solid #ef4444;"
@@ -283,18 +283,18 @@ defmodule SitevoiceWeb.Logs.ShowLive do
         </div>
       <% end %>
 
-      <div class="app-page blueprint-bg orange-glow" style="padding: 40px;">
-        <div style="max-width: 860px; margin: 0 auto;">
+      <div class="app-page blueprint-bg orange-glow">
+        <div style="max-width: 860px; margin: 0 auto; padding: 40px 24px;">
 
         <%!-- Header --%>
-        <div style="margin-bottom: 32px; animation: fadeUp 0.6s ease both;">
+        <div style="margin-bottom: 32px;">
           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
             <div>
               <a href={~p"/dashboard"} class="chevron-link" style="margin-bottom: 12px; display: inline-flex;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                 Dashboard
               </a>
-              <div class="display-heading" style="margin-top: 8px;"><%= Calendar.strftime(@log.date, "%B %d, %Y") %></div>
+              <div class="display-heading" style="font-size: 26px; margin-top: 8px;"><%= Calendar.strftime(@log.date, "%B %d, %Y") %></div>
             </div>
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
               <.log_status_pill status={@log.status} />
@@ -333,7 +333,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
 
         <%!-- Success Overlay --%>
         <%= if @show_success do %>
-          <div class="success-card" style="margin-bottom: 32px; animation: fadeUp 0.4s ease both;">
+          <div class="success-card" style="margin-bottom: 32px;">
             <div class="success-title">REPORT SENT</div>
             <div style="font-size: 14px; color: var(--chalk); opacity: 0.7; margin-bottom: 24px;">
               Your daily log has been submitted successfully.

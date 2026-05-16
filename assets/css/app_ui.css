@@ -28,6 +28,7 @@ body.app-ui {
   color: var(--chalk);
   font-family: var(--font-body);
   overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 
 /* NOISE OVERLAY */

@@ -7,7 +7,7 @@ defmodule SitevoiceWeb.NavComponent do
 
   def settings_nav(assigns) do
     ~H"""
-    <div style="width: 200px; flex-shrink: 0; align-self: center;">
+    <div style="width: 200px; flex-shrink: 0; align-self: flex-start;">
       <div>
         <div style="font-family: var(--font-mono); font-size: 10px; color: var(--chalk); opacity: 0.4; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px;">
           Settings

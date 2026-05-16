@@ -63,18 +63,18 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
     ~H"""
     <div class="app-ui">
       <.nav current_user={@current_user} current_organization={@current_organization} current_path="/logs" />
-      <div class="app-page blueprint-bg" style="padding: 40px;">
-        <div style="max-width: 560px; margin: 0 auto; text-align: center;">
-          <div style="animation: fadeUp 0.6s ease both;">
+      <div class="app-page blueprint-bg">
+        <div style="max-width: 560px; margin: 0 auto; text-align: center; padding: 40px 24px;">
+          <div>
             <div class="section-label" style="justify-content: center; margin-bottom: 8px;">Pipeline</div>
-            <div class="display-heading" style="margin-bottom: 8px;">Processing</div>
+            <div class="display-heading" style="font-size: 26px; margin-bottom: 8px;">Processing</div>
             <div style="font-family: var(--font-mono); font-size: 12px; color: var(--chalk); opacity: 0.5; margin-bottom: 40px; letter-spacing: 1px;">
               <%= Date.utc_today() |> Calendar.strftime("%B %d, %Y") %>
             </div>
           </div>
 
           <%!-- Orb Animation --%>
-          <div style="margin: 0 auto 48px; animation: fadeUp 0.6s 0.2s ease both;">
+          <div style="margin: 0 auto 48px;">
             <div class="orb-container">
               <div class="orb-ring ring1"></div>
               <div class="orb-ring ring2"></div>
@@ -89,7 +89,7 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
           </div>
 
           <%!-- Step List --%>
-          <div style="display: flex; flex-direction: column; gap: 10px; text-align: left; margin-bottom: 32px; animation: fadeUp 0.6s 0.3s ease both;">
+          <div style="display: flex; flex-direction: column; gap: 10px; text-align: left; margin-bottom: 32px;">
             <.proc_step
               title={if @is_text_report, do: "Report Typed", else: "Audio Uploaded"}
               status={:done}
@@ -119,7 +119,7 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
 
           <%!-- Report Ready Banner --%>
           <%= if @report_ready do %>
-            <div class="ready-banner" style="animation: fadeUp 0.4s ease both;">
+            <div class="ready-banner">
               <div>
                 <div class="ready-banner-text">Report Ready</div>
                 <div style="font-size: 13px; color: var(--chalk); opacity: 0.7; margin-top: 4px;">

@@ -231,10 +231,10 @@ defmodule SitevoiceWeb.Settings.UsersLive do
     <div class="app-ui">
       <.nav current_user={@current_user} current_organization={@current_organization} current_path="/settings" />
       <div class="app-page blueprint-bg orange-glow">
-        <div style="display: flex; gap: 48px; align-items: flex-start; max-width: 1100px; margin: 0 auto;">
+        <div style="display: flex; gap: 48px; align-items: flex-start; max-width: 1100px; margin: 0 auto; min-height: calc(100vh - 72px); padding: 40px 24px;">
           <.settings_nav current="users" current_user={@current_user} />
 
-          <div style="flex: 1; min-width: 0; animation: fadeUp 0.5s ease both;">
+          <div style="flex: 1; min-width: 0;">
             <%!-- Header --%>
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
               <div>
