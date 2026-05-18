@@ -19,24 +19,22 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
          ) do
       {:ok, log} ->
         report_ready = log.status in [:draft, :submitted]
+        awaiting_clarification = log.status == :awaiting_clarification
 
-        unless report_ready do
-          topic = "org:#{org_id}:log:#{log_id}"
-          Phoenix.PubSub.subscribe(Sitevoice.PubSub, topic)
+        cond do
+          awaiting_clarification ->
+            {:ok,
+             socket
+             |> push_navigate(to: ~p"/logs/#{log_id}/clarify")}
+
+          true ->
+            unless report_ready do
+              topic = "org:#{org_id}:log:#{log_id}"
+              Phoenix.PubSub.subscribe(Sitevoice.PubSub, topic)
+            end
+
+            do_mount(socket, log, log_id, org_id, report_ready)
         end
-
-        step_statuses =
-          @pipeline_steps
-          |> Enum.reduce(%{}, fn step, acc -> Map.put(acc, step, :waiting) end)
-
-        {:ok,
-         socket
-         |> assign(:tenant, org_id)
-         |> assign(:log, log)
-         |> assign(:log_id, log_id)
-         |> assign(:report_ready, report_ready)
-         |> assign(:step_statuses, step_statuses)
-         |> assign(:is_text_report, is_nil(log.audio_key))}
 
       {:error, _} ->
         {:ok,
@@ -44,6 +42,21 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
          |> put_flash(:error, "Log not found.")
          |> push_navigate(to: ~p"/dashboard")}
     end
+  end
+
+  defp do_mount(socket, log, log_id, org_id, report_ready) do
+    step_statuses =
+      @pipeline_steps
+      |> Enum.reduce(%{}, fn step, acc -> Map.put(acc, step, :waiting) end)
+
+    {:ok,
+     socket
+     |> assign(:tenant, org_id)
+     |> assign(:log, log)
+     |> assign(:log_id, log_id)
+     |> assign(:report_ready, report_ready)
+     |> assign(:step_statuses, step_statuses)
+     |> assign(:is_text_report, is_nil(log.audio_key))}
   end
 
   @impl true
@@ -54,6 +67,10 @@ defmodule SitevoiceWeb.Logs.ProcessingLive do
 
   def handle_info({:report_ready, _payload}, socket) do
     {:noreply, assign(socket, :report_ready, true)}
+  end
+
+  def handle_info({:clarification_needed, _payload}, socket) do
+    {:noreply, push_navigate(socket, to: ~p"/logs/#{socket.assigns.log_id}/clarify")}
   end
 
   def handle_info(_, socket), do: {:noreply, socket}

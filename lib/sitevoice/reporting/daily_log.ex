@@ -31,7 +31,7 @@ defmodule Sitevoice.Reporting.DailyLog do
     attribute :date, :date, allow_nil?: false
     attribute :status, :atom,
       allow_nil?: false,
-      constraints: [one_of: [:pending, :processing, :draft, :submitted, :failed]],
+      constraints: [one_of: [:pending, :processing, :awaiting_clarification, :draft, :submitted, :failed]],
       default: :pending
 
     attribute :audio_key, :string
@@ -48,6 +48,12 @@ defmodule Sitevoice.Reporting.DailyLog do
     attribute :weather, :string
     attribute :submitted_at, :utc_datetime
     attribute :corrections, {:array, :map}, default: []
+
+    attribute :clarification_questions, {:array, :map}, default: []
+    attribute :clarification_audio_key, :string
+    attribute :clarification_audio_duration, :integer
+    attribute :clarification_transcript, :string
+    attribute :clarification_round, :integer, default: 0, allow_nil?: false
 
     timestamps()
   end
@@ -68,6 +74,7 @@ defmodule Sitevoice.Reporting.DailyLog do
   calculations do
     calculate :pdf_url, :string, Sitevoice.Reporting.Calculations.PdfUrl
     calculate :audio_url, :string, Sitevoice.Reporting.Calculations.AudioUrl
+    calculate :clarification_audio_url, :string, Sitevoice.Reporting.Calculations.ClarificationAudioUrl
     calculate :is_late, :boolean, Sitevoice.Reporting.Calculations.IsLate
   end
 
@@ -148,6 +155,43 @@ defmodule Sitevoice.Reporting.DailyLog do
 
     update :mark_failed do
       change set_attribute(:status, :failed)
+    end
+
+    update :request_clarification do
+      accept [:clarification_questions]
+      change set_attribute(:status, :awaiting_clarification)
+    end
+
+    update :submit_clarification do
+      accept [:clarification_audio_key, :clarification_audio_duration]
+      require_atomic? false
+
+      change before_action(fn changeset, _ ->
+        if changeset.data.clarification_round >= 1 do
+          Ash.Changeset.add_error(changeset, "Clarification round cap reached")
+        else
+          changeset
+        end
+      end)
+
+      change set_attribute(:status, :processing)
+      change Sitevoice.Reporting.Changes.EnqueueClarification
+    end
+
+    update :apply_clarification_transcript do
+      accept [:clarification_transcript]
+    end
+
+    update :apply_clarification_structure do
+      accept [:labor, :progress, :equipment, :materials, :delays, :safety, :accuracy_score]
+      change set_attribute(:status, :draft)
+      change set_attribute(:clarification_round, 1)
+    end
+
+    update :skip_clarification do
+      require_atomic? false
+      change set_attribute(:status, :processing)
+      change Sitevoice.Reporting.Changes.EnqueueFinalize
     end
 
     update :undo_apply_transcript do
@@ -239,8 +283,13 @@ defmodule Sitevoice.Reporting.DailyLog do
       authorize_if actor_attribute_equals(:role, :org_admin)
     end
 
-    policy action([:apply_transcript, :apply_structure, :mark_failed, :undo_apply_transcript, :undo_apply_structure]) do
+    policy action([:apply_transcript, :apply_structure, :mark_failed, :undo_apply_transcript, :undo_apply_structure, :request_clarification, :apply_clarification_transcript, :apply_clarification_structure]) do
       authorize_if actor_absent()
+      authorize_if actor_attribute_equals(:role, :org_admin)
+    end
+
+    policy action([:submit_clarification, :skip_clarification]) do
+      authorize_if relates_to_actor_via(:foreman)
       authorize_if actor_attribute_equals(:role, :org_admin)
     end
 

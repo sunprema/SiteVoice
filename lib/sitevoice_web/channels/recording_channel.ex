@@ -54,6 +54,71 @@ defmodule SitevoiceWeb.RecordingChannel do
     {:noreply, socket}
   end
 
+  def handle_in("clarification_complete", params, socket) do
+    log_id = socket.assigns.log_id
+    org_id = socket.assigns.organization_id
+    user = socket.assigns.current_user
+
+    audio_key = Map.get(params, "audio_key")
+    audio_duration = Map.get(params, "audio_duration")
+
+    Logger.info("RecordingChannel received clarification_complete",
+      log_id: log_id,
+      audio_key: audio_key
+    )
+
+    with {:ok, log} <-
+           Sitevoice.Reporting.get_log(log_id, tenant: to_string(org_id), authorize?: false),
+         :ok <- ensure_foreman(log, user),
+         {:ok, _} <-
+           Ash.update(log, %{clarification_audio_key: audio_key, clarification_audio_duration: audio_duration},
+             action: :submit_clarification,
+             tenant: to_string(org_id),
+             actor: user,
+             authorize?: true
+           ) do
+      push(socket, "clarification_processing", %{})
+      {:reply, :ok, socket}
+    else
+      {:error, reason} ->
+        Logger.warning("RecordingChannel clarification_complete failed",
+          log_id: log_id,
+          reason: inspect(reason)
+        )
+
+        {:reply, {:error, %{reason: "rejected"}}, socket}
+    end
+  end
+
+  def handle_in("skip_clarification", _params, socket) do
+    log_id = socket.assigns.log_id
+    org_id = socket.assigns.organization_id
+    user = socket.assigns.current_user
+
+    Logger.info("RecordingChannel received skip_clarification", log_id: log_id)
+
+    with {:ok, log} <-
+           Sitevoice.Reporting.get_log(log_id, tenant: to_string(org_id), authorize?: false),
+         :ok <- ensure_foreman(log, user),
+         {:ok, _} <-
+           Ash.update(log, %{},
+             action: :skip_clarification,
+             tenant: to_string(org_id),
+             actor: user,
+             authorize?: true
+           ) do
+      {:reply, :ok, socket}
+    else
+      {:error, reason} ->
+        Logger.warning("RecordingChannel skip_clarification failed",
+          log_id: log_id,
+          reason: inspect(reason)
+        )
+
+        {:reply, {:error, %{reason: "rejected"}}, socket}
+    end
+  end
+
   @impl true
   def handle_info({:report_ready, payload}, socket) do
     Logger.info("RecordingChannel pushing report_ready to client", log_id: socket.assigns[:log_id])
@@ -71,6 +136,16 @@ defmodule SitevoiceWeb.RecordingChannel do
     Logger.warning("RecordingChannel pushing pipeline_failed to client", log_id: socket.assigns[:log_id])
     push(socket, "pipeline_failed", payload)
     {:noreply, socket}
+  end
+
+  def handle_info({:clarification_needed, payload}, socket) do
+    Logger.info("RecordingChannel pushing clarification_needed", log_id: socket.assigns[:log_id])
+    push(socket, "clarification_needed", payload)
+    {:noreply, socket}
+  end
+
+  defp ensure_foreman(log, user) do
+    if log.foreman_id == user.id, do: :ok, else: {:error, :not_foreman}
   end
 
   defp authorized?(socket, log_id) do

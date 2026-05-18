@@ -60,4 +60,10 @@ defmodule SitevoiceWeb.LogChannel do
     push(socket, "pipeline_failed", payload)
     {:noreply, socket}
   end
+
+  def handle_info({:clarification_needed, payload}, socket) do
+    Logger.info("LogChannel pushing clarification_needed", log_id: socket.assigns[:log_id])
+    push(socket, "clarification_needed", payload)
+    {:noreply, socket}
+  end
 end

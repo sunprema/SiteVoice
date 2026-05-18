@@ -104,6 +104,8 @@ Update this table as slices are completed:
 | 10    | Mobile         | ⬜ Not started |
 | 11    | User Management| ✅ Complete    |
 | 12    | Weekly Report  | ✅ Complete    |
+| 13    | Lua RBAC       | ⬜ Not started |
+| 14    | Clarification  | ✅ Complete    |
 
 ---
 

@@ -3,7 +3,7 @@ defmodule Sitevoice.Steps.StructureWithClaude do
 
   require Logger
 
-  @system_prompt """
+  @base_system_prompt """
   You are an expert construction daily log assistant. Extract information
   from the transcript and return ONLY valid JSON with these keys:
   labor, progress, equipment, materials, delays, safety, accuracy_score.
@@ -19,13 +19,13 @@ defmodule Sitevoice.Steps.StructureWithClaude do
   Empty sections → []. Return ONLY JSON. No preamble. No fences.
   """
 
-  def run(%{transcript: transcript}, _, _) do
+  def run(%{transcript: transcript} = args, _, _) do
     with :ok <- check_api_key() do
-      do_run(transcript)
+      do_run(transcript, args[:project])
     end
   end
 
-  defp do_run(transcript) do
+  defp do_run(transcript, project) do
     transcript_chars = String.length(transcript)
     Logger.info("Claude structuring starting — #{transcript_chars} chars")
 
@@ -45,7 +45,7 @@ defmodule Sitevoice.Steps.StructureWithClaude do
               json: %{
                 model: "claude-sonnet-4-20250514",
                 max_tokens: 2000,
-                system: @system_prompt,
+                system: build_system_prompt(project),
                 messages: [%{role: "user", content: transcript}]
               },
               receive_timeout: 30_000
@@ -59,6 +59,33 @@ defmodule Sitevoice.Steps.StructureWithClaude do
   end
 
   def compensate(_, _, _, _), do: :ok
+
+  defp build_system_prompt(nil), do: @base_system_prompt
+
+  defp build_system_prompt(%{daily_log_context: context, required_sections: sections}) do
+    """
+    You are an expert construction daily log assistant working on this project:
+
+    PROJECT CONTEXT:
+    #{context}
+
+    REQUIRED SECTIONS for this project: #{Enum.join(sections, ", ")}
+
+    Extract information from the transcript and return ONLY valid JSON with these keys:
+    labor, progress, equipment, materials, delays, safety, accuracy_score.
+
+    - labor:     [{crew, headcount, trade, hours, subcontractor}]
+    - progress:  [{description, location, percentage_complete}]
+    - equipment: [{item, status, note}]
+    - materials: [{item, quantity, received_at, note}]
+    - delays:    [{description, cause, impact, hours_lost}]
+    - safety:    [{description, incident_type}]
+    - accuracy_score: float 0.0–1.0
+
+    Lower accuracy_score when the transcript does not adequately cover the REQUIRED SECTIONS.
+    Empty sections → []. Return ONLY JSON. No preamble. No fences.
+    """
+  end
 
   defp parse_response({:ok, %{status: 200, body: %{"content" => [%{"text" => t} | _]}}}) do
     case Jason.decode(t) do

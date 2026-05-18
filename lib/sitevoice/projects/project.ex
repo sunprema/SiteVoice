@@ -16,6 +16,8 @@ defmodule Sitevoice.Projects.Project do
     table "projects"
     repo Sitevoice.Repo
 
+    migration_defaults required_sections: ~s|["labor", "progress", "safety"]|
+
     custom_indexes do
       index [:organization_id]
       index [:organization_id, :code], unique: true
@@ -32,6 +34,23 @@ defmodule Sitevoice.Projects.Project do
     attribute :address, :string, public?: true
     attribute :timezone, :string, default: "America/Phoenix", public?: true
     attribute :active, :boolean, default: true, allow_nil?: false, public?: true
+
+    attribute :required_sections, {:array, :atom},
+      constraints: [
+        items: [one_of: [:labor, :progress, :equipment, :materials, :delays, :safety, :weather]]
+      ],
+      default: [:labor, :progress, :safety],
+      public?: true
+
+    attribute :daily_log_context, :string,
+      default:
+        "General construction site. Each daily log should describe crew composition by trade, the day's work progress with locations, any safety incidents (or 'none'), notable deliveries or equipment movements, and any delays. Note weather if it affected work.",
+      public?: true
+
+    attribute :daily_log_min_accuracy, :float,
+      constraints: [min: 0.0, max: 1.0],
+      default: 0.7,
+      public?: true
 
     timestamps()
   end
@@ -56,7 +75,7 @@ defmodule Sitevoice.Projects.Project do
 
   actions do
     create :create do
-      accept [:name, :code, :address, :timezone]
+      accept [:name, :code, :address, :timezone, :required_sections, :daily_log_context, :daily_log_min_accuracy]
       change set_attribute(:organization_id, actor(:organization_id))
       change Sitevoice.Projects.Changes.NormalizeCode
     end
@@ -72,6 +91,10 @@ defmodule Sitevoice.Projects.Project do
 
     update :update do
       accept [:name, :address, :timezone, :active]
+    end
+
+    update :update_daily_log_brief do
+      accept [:required_sections, :daily_log_context, :daily_log_min_accuracy]
     end
 
     destroy :archive do
@@ -94,6 +117,11 @@ defmodule Sitevoice.Projects.Project do
     end
 
     policy action(:update) do
+      authorize_if actor_attribute_equals(:role, :org_admin)
+      authorize_if actor_attribute_equals(:role, :pm)
+    end
+
+    policy action(:update_daily_log_brief) do
       authorize_if actor_attribute_equals(:role, :org_admin)
       authorize_if actor_attribute_equals(:role, :pm)
     end

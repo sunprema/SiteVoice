@@ -11,13 +11,13 @@ defmodule Sitevoice.Workers.AudioProcessorTest do
   alias Sitevoice.Workers.AudioProcessor
 
   @valid_structure %{
-    "labor" => [],
-    "progress" => [],
+    "labor" => [%{"crew" => "A", "headcount" => 4, "trade" => "Carpenter", "hours" => 8}],
+    "progress" => [%{"description" => "Poured footing on south wall"}],
     "equipment" => [],
     "materials" => [],
     "delays" => [],
-    "safety" => [],
-    "accuracy_score" => 0.75
+    "safety" => [%{"description" => "All workers wore PPE"}],
+    "accuracy_score" => 0.85
   }
 
   defp setup_org do

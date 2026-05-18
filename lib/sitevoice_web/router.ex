@@ -38,12 +38,14 @@ defmodule SitevoiceWeb.Router do
       live "/dashboard", DashboardLive
       live "/projects", Projects.IndexLive
       live "/projects/:id", Projects.ShowLive
+      live "/projects/:id/settings", Projects.SettingsLive
       live "/projects/:project_id/logs/new", Logs.NewLive
       live "/projects/:project_id/logs/today", Logs.LogSessionLive
       live "/projects/:project_id/weekly-reports", WeeklyReportsLive
       live "/logs", Logs.IndexLive
       live "/logs/:id", Logs.ShowLive
       live "/logs/:id/processing", Logs.ProcessingLive
+      live "/logs/:id/clarify", Logs.ClarificationLive
       live "/settings/profile", Settings.ProfileLive
       live "/settings/users", Settings.UsersLive
       live "/settings/organization", Settings.OrganizationLive

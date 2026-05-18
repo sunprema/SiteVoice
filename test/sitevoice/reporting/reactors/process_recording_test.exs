@@ -10,11 +10,11 @@ defmodule Sitevoice.Reporting.Reactors.ProcessRecordingTest do
 
   @valid_structure %{
     "labor" => [%{"crew" => "Martinez", "headcount" => 6}],
-    "progress" => [],
+    "progress" => [%{"description" => "Poured footing"}],
     "equipment" => [],
     "materials" => [],
     "delays" => [],
-    "safety" => [],
+    "safety" => [%{"description" => "All workers wore PPE"}],
     "accuracy_score" => 0.88
   }
 

@@ -25,7 +25,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
            tenant: org_id,
            actor: user,
            authorize?: true,
-           load: [:pdf_url, :audio_url, :photos, :foreman, :project]
+           load: [:pdf_url, :audio_url, :clarification_audio_url, :photos, :foreman, :project]
          ) do
       {:ok, log} ->
         {:ok,
@@ -131,7 +131,7 @@ defmodule SitevoiceWeb.Logs.ShowLive do
            ) do
         {:ok, updated_log} ->
           {:ok, updated_log} =
-            Ash.load(updated_log, [:pdf_url, :audio_url, :photos, :foreman, :project],
+            Ash.load(updated_log, [:pdf_url, :audio_url, :clarification_audio_url, :photos, :foreman, :project],
               tenant: org_id,
               authorize?: false
             )
@@ -363,12 +363,65 @@ defmodule SitevoiceWeb.Logs.ShowLive do
           </div>
         <% end %>
 
+        <%!-- Original Recording --%>
+        <%= if @log.audio_url do %>
+          <div class="card" style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px;">
+              <div class="section-label" style="margin-bottom: 0;">Original Recording</div>
+              <div style="font-family: var(--font-mono); font-size: 10px; color: var(--chalk); opacity: 0.5; letter-spacing: 1px;">
+                <%= format_duration(@log.audio_duration) %>
+              </div>
+            </div>
+            <audio controls preload="metadata" src={@log.audio_url} style="width: 100%; height: 40px;">
+              Your browser does not support the audio element.
+            </audio>
+            <div style="margin-top: 8px;">
+              <a href={@log.audio_url} download style="font-family: var(--font-mono); font-size: 11px; color: var(--chalk); opacity: 0.5; text-decoration: none; letter-spacing: 1px;">
+                ↓ Download
+              </a>
+            </div>
+          </div>
+        <% end %>
+
+        <%!-- Follow-up Answer (clarification audio) --%>
+        <%= if @log.clarification_audio_url do %>
+          <div class="card" style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px;">
+              <div class="section-label" style="margin-bottom: 0;">Follow-up Answer</div>
+              <div style="font-family: var(--font-mono); font-size: 10px; color: var(--chalk); opacity: 0.5; letter-spacing: 1px;">
+                <%= format_duration(@log.clarification_audio_duration) %>
+              </div>
+            </div>
+            <div style="font-size: 11px; color: var(--chalk); opacity: 0.5; margin-bottom: 12px;">
+              Foreman's response to clarification questions.
+            </div>
+            <audio controls preload="metadata" src={@log.clarification_audio_url} style="width: 100%; height: 40px;">
+              Your browser does not support the audio element.
+            </audio>
+            <div style="margin-top: 8px;">
+              <a href={@log.clarification_audio_url} download style="font-family: var(--font-mono); font-size: 11px; color: var(--chalk); opacity: 0.5; text-decoration: none; letter-spacing: 1px;">
+                ↓ Download
+              </a>
+            </div>
+          </div>
+        <% end %>
+
         <%!-- Transcript --%>
         <%= if @log.transcript do %>
           <div class="card" style="margin-bottom: 24px;">
             <div class="section-label">Transcript</div>
             <div style="font-size: 13px; line-height: 1.7; color: var(--chalk); opacity: 0.8; font-style: italic;">
               "<%= @log.transcript %>"
+            </div>
+          </div>
+        <% end %>
+
+        <%!-- Clarification Transcript --%>
+        <%= if @log.clarification_transcript do %>
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="section-label">Follow-up Transcript</div>
+            <div style="font-size: 13px; line-height: 1.7; color: var(--chalk); opacity: 0.8; font-style: italic;">
+              "<%= @log.clarification_transcript %>"
             </div>
           </div>
         <% end %>
@@ -680,4 +733,12 @@ defmodule SitevoiceWeb.Logs.ShowLive do
   end
 
   defp format_error(error), do: inspect(error)
+
+  defp format_duration(nil), do: "—"
+  defp format_duration(seconds) when is_integer(seconds) and seconds > 0 do
+    mins = div(seconds, 60)
+    secs = rem(seconds, 60)
+    :io_lib.format("~B:~2..0B", [mins, secs]) |> IO.iodata_to_binary()
+  end
+  defp format_duration(_), do: "—"
 end
